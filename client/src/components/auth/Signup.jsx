@@ -1,13 +1,13 @@
 import React from 'react'
 import { useState } from 'react'
 import { 
-   FormControl,
-    FormLabel,
+     FormControl,
+     FormLabel,
      Input,
      Button, 
      InputGroup,
-      InputRightElement,
-       VStack 
+     InputRightElement,
+     VStack 
       } from "@chakra-ui/react"
 
 const Signup = () => {
@@ -40,6 +40,7 @@ const Signup = () => {
              onChange= {(e)=>setFullName(e.target.value)}
           />
        </FormControl>
+
        <FormControl id = "email" isRequired>
          <FormLabel>Email</FormLabel>
          <Input
@@ -48,6 +49,7 @@ const Signup = () => {
              onChange= {(e)=>setEmail(e.target.value)}
           />
        </FormControl>
+       
        <FormControl id = "password" isRequired>
          <FormLabel>Password</FormLabel>
          <InputGroup size= "md">
@@ -63,6 +65,7 @@ const Signup = () => {
             </InputRightElement>
           </InputGroup>
        </FormControl>
+
        <FormControl id = "confirmPassword" isRequired>
          <FormLabel>Confirm Password</FormLabel>
          <InputGroup size= "md">
