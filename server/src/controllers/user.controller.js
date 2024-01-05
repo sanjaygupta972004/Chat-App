@@ -4,17 +4,18 @@ import {asyncHandler} from '../utils/asyncHandler.js';
 import { User } from '../models/user.model.js';
 import { upLoadOnCloudinary } from '../utils/cloudinary.js';
 
+
 const signUp = asyncHandler(async(req,res)=>{
  
    const {fullName,username,password,email} = req.body;
    if(!fullName || !username || !password || !email){
-      throw new ApiError(402,"All fields are required")
+      throw new ApiError(400,"All fields are required")
    }
    //console.log(req.files)
 
    const oldUser = await User.findOne({email})
    if(oldUser){
-      throw new ApiError(402,"User already exists")
+      throw new ApiError(400,"User already exists")
    }
 
    const localPathProfileImage = req.files?.profileImage[0]?.path;
@@ -22,7 +23,7 @@ const signUp = asyncHandler(async(req,res)=>{
   // console.log(localPathProfileImage)
     
    if(!localPathProfileImage){
-      throw new ApiError(402,"Profile Image is required")
+      throw new ApiError(400,"Profile Image is required")
    }
 
    const localPathCoverImage = req.files?.coverImage[0]?.path;
@@ -53,6 +54,34 @@ const signUp = asyncHandler(async(req,res)=>{
 
 })
 
+const logIn = asyncHandler(async(req,res)=>{
+
+   const {email,password} = req.body;
+   if(!email || !password){
+      throw new ApiError(400,"All fields are required")
+   }
+
+   const user = await User.findOne({ email})
+   if(!user){
+      throw new ApiError(400,"User does not exist")
+   }
+
+   const isPasswordCorrect = await user.comparePassword(password)
+   if(!isPasswordCorrect){
+      throw new ApiError(400,"Password is incorrect")
+   }
+
+   const accessToken = await user.accessTokenGenerator()
+
+   const isLoggedUser = await User.findOne({email}).select("-password")
+
+   return res
+   .status(200)
+   .json(new ApiResponse(200,{accessToken,isLoggedUser},"User logged in successfully"))
+
+})
+
 export {
    signUp,
+   logIn
 }

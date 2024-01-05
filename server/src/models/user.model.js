@@ -1,5 +1,6 @@
 import mongoose, { Mongoose,Schema } from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const userSchema = new Schema(
    {
@@ -48,10 +49,6 @@ const userSchema = new Schema(
          
       }
    })
-   
-
-   export const User = mongoose.model("user",userSchema)
-
 
 
    userSchema.methods.comparePassword = async function(password){
@@ -64,3 +61,26 @@ const userSchema = new Schema(
          throw new Error("Error comparing password")
       }
    }
+
+   userSchema.methods.accessTokenGenerator = async function(){
+   try {
+      return await jwt.sign(
+         {
+            _id:this._id,
+            username:this.username,
+            email:this.email,
+         },
+         process.env.JWT_ACCESS_TOKEN_SECRET,
+         {
+            expiresIn:process.env.JWT_ACCESS_TOKEN_EXPIRY_TIME,
+         }
+      )
+      
+   } catch (error) {
+      console.error(error.message)
+      throw new Error("Error during generating access token")
+   }
+   }
+
+
+   export const User = mongoose.model("user",userSchema)
