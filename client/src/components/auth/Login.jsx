@@ -40,6 +40,7 @@ try {
     status: "success",
     duration: 3000,
     isClosable: true,
+    position: "top-right"
   })
   history.push("/chat")
 } catch (error) {
@@ -86,7 +87,7 @@ try {
   <Button
         colorScheme="blue"
         width="100%"
-        className="mt-2"
+        className="mt-2 hover:bg-blue-700 hover:text-gray-100"
         onClick={submitHandler}
       
       >

@@ -49,6 +49,7 @@ const Signup = () => {
          status: "error",
          duration: 2000,
          isClosable: true,
+         position: "top-right"
        })
       return
    }
@@ -59,6 +60,7 @@ const Signup = () => {
          status: "error",
          duration: 2000,
          isClosable: true,
+         position: "top-right"
        })
       return
    }
@@ -115,6 +117,7 @@ const Signup = () => {
          status: "error",
          duration: 3000,
          isClosable: true,
+         position: "top-right"
        })
    }
 }
@@ -184,7 +187,7 @@ const Signup = () => {
        <Button
         colorScheme="blue"
         width="100%"
-        className="mt-2"
+        className="mt-2 hover:bg-blue-700 hover:text-gray-100"
         onClick={submitHandler}
       >
         Sign Up

@@ -54,6 +54,8 @@ const signUp = asyncHandler(async(req,res)=>{
 
 })
 
+
+
 const logIn = asyncHandler(async(req,res)=>{
 
    const {email,password} = req.body;
@@ -81,7 +83,35 @@ const logIn = asyncHandler(async(req,res)=>{
 
 })
 
+const getAllUsers = asyncHandler(async (req, res) => {
+   const keyword = req.query.search ? {
+       $or: [
+           {
+               fullName: {
+                   $regex: req.query.search,
+                   $options: "i"
+               }
+           },
+           {
+               email: {
+                   $regex: req.query.search,
+                   $options: "i"
+               }
+           }
+       ]
+   } : {};
+
+   const users = await User.find(keyword).find({_id:{$ne:req.user._id}}).select("-password");
+
+   return res
+       .status(200)
+       .json(new ApiResponse(200, users, "Users fetched successfully"));
+});
+
+
+
 export {
    signUp,
-   logIn
+   logIn,
+   getAllUsers
 }
