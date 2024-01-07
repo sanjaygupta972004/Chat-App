@@ -20,6 +20,7 @@ const history = useHistory()
 const[email, setEmail] = useState("")
 const[password, setPassword] = useState("")
 const[show, setShow] = useState(false)
+const[loading, setLoading] = useState(false)
 
 const handleClick = () => setShow(!show)
 
@@ -27,8 +28,22 @@ const fieldData = { email, password}
 
 //console.log(fieldData)
 
-const submitHandler = async (e) => {
-e.preventDefault()
+const submitHandler = async () => {
+setLoading(true)
+
+if(!email || !password){
+  setLoading(false)
+  toast({
+    title: "Please fill all fields",
+    status: "error",
+    duration: 5000,
+    isClosable: true,
+    position: "top-right"
+  })
+  setLoading(false)
+  return
+}
+
 
 try {
   const res = await axios.post("http://localhost:5000/api/v1/users/login", fieldData)
@@ -38,7 +53,7 @@ try {
   toast({
     title: "Login Successful",
     status: "success",
-    duration: 3000,
+    duration: 5000,
     isClosable: true,
     position: "top-right"
   })
@@ -48,16 +63,17 @@ try {
   toast({
     title: "Login Failed",
     status: "error",
-    duration: 3000,
+    duration: 5000,
     isClosable: true,
     position: "top-right"
   })
+  setLoading(false)
 }
 
 }
 
   return (
-    <VStack spacing={"8px"} >
+    <VStack spacing="10px" >
    
     <FormControl id = "email" isRequired>
     <FormLabel>Email</FormLabel>
@@ -89,6 +105,7 @@ try {
         width="100%"
         className="mt-2 hover:bg-blue-700 hover:text-gray-100"
         onClick={submitHandler}
+        isLoading={loading}
       
       >
         Log in

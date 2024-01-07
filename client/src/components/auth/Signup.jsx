@@ -24,14 +24,21 @@ const Signup = () => {
    const[password, setPassword] = useState("")
    const[coverImage, setCoverImage] = useState("")
    const[profileImage, setProfileImage] = useState("")
+   const[loading, setLoading] = useState(false)
 
-   //console.log(profileImage , coverImage);
    const[show, setShow] = useState(false)
-   
    const handleClick = () => setShow(!show)
 
-   const submitHandler = async (e) => {
-   e.preventDefault()
+   const handleProfileImageChange = (e) => {
+      setProfileImage(e.target.files[0])
+   }
+
+   const handleCoverImageChange = (e) => {
+      setCoverImage(e.target.files[0])
+   }
+
+   const submitHandler = async () => {
+   setLoading(true)
 
    if(!fullName || !username || !email || !password || !profileImage || !coverImage){
       toast({
@@ -39,7 +46,9 @@ const Signup = () => {
          status: "error",
          duration: 2000,
          isClosable: true,
+         position: "top-right"
        })
+      setLoading(false)
       return
    }
 
@@ -51,9 +60,9 @@ const Signup = () => {
          isClosable: true,
          position: "top-right"
        })
+       setLoading(false)
       return
    }
-
    if(!email.includes("@")){
       toast({
          title: "Please enter a valid email",
@@ -62,8 +71,21 @@ const Signup = () => {
          isClosable: true,
          position: "top-right"
        })
+       setLoading(false)
       return
    }
+
+   if(!email.includes(".com")){
+      toast({
+         title: "Please enter a valid email",
+         status: "error",
+         duration: 2000,
+         isClosable: true,
+         position: "top-right"
+       })
+       setLoading(false)
+      return
+      }
   
    if(password.length < 6){
       toast({
@@ -73,6 +95,7 @@ const Signup = () => {
          isClosable: true,
          position: "top-right"
        })
+       setLoading(false)
       return
    }
 
@@ -84,32 +107,32 @@ const Signup = () => {
    data.append("password", password)
    data.append("username", username)
 
-   
   // console.log("FormData:", data);
-
 
     try {
       
       const response = await axios.post("http://localhost:5000/api/v1/users/signup", data)
 
-       const responseData =  response.data
+      const responseData =  response.data
       
        localStorage.setItem("userInfo", JSON.stringify(responseData));
-
+       toast({
+         title: "Account Created Successfully",
+         status: "success",
+         duration: 5000,
+         isClosable: true,
+       })
+   
          setFullName("")
          setUsername("")
          setEmail("")
          setPassword("")
          setCoverImage("")
          setProfileImage("")
+         setLoading(false)
+         history.push("/chats");
 
-         toast({
-            title: "Account Created Successfully",
-            status: "success",
-            duration: 4000,
-            isClosable: true,
-          })
-             history.push("/chats");
+
    } catch (error) {
       console.error(error.message)
       toast({
@@ -119,6 +142,7 @@ const Signup = () => {
          isClosable: true,
          position: "top-right"
        })
+         setLoading(false)
    }
 }
   
@@ -172,7 +196,7 @@ const Signup = () => {
              p="6px"
              placeholder="Enter Profile Picture" 
              type="file"
-             onChange= {(e)=>setProfileImage(e.target.files[0])}
+             onChange= {handleProfileImageChange}
           />
        </FormControl>
        <FormControl id = "coverImage" >
@@ -181,14 +205,15 @@ const Signup = () => {
              p="6px"
              placeholder="Enter Cover Picture" 
              type="file"
-             onChange= {(e)=>setCoverImage(e.target.files[0])}
+             onChange= {handleCoverImageChange}
           />
        </FormControl>
        <Button
         colorScheme="blue"
         width="100%"
         className="mt-2 hover:bg-blue-700 hover:text-gray-100"
-        onClick={submitHandler}
+         onClick={submitHandler}
+         isLoading={loading}
       >
         Sign Up
       </Button>
