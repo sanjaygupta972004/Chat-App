@@ -92,6 +92,7 @@ const fetchChat = asyncHandler(async (req,res)=>{
        .json(new ApiResponse(200,chat,"all chat of user"))
 })
 
+
 const createGroupChat = asyncHandler(async (req, res) => {
    const { users, chatName } = req.body;
 
@@ -120,41 +121,20 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
    const groupChat = await Chat.create(chatData);
 
-   const existingChat = await Chat.findById(groupChat._id).populate("users", "-password").populate("groupAdmin", "-password");
+     const existingChat = await groupChat.save();
 
-   // console.log(existingChat);
+   const chatDetails = await Chat.findById(existingChat._id).populate("users", "-password").populate("groupAdmin", "-password");
 
-   if (!existingChat) {
+    console.log(chatDetails);
+
+   if (!chatDetails) {
       throw new ApiError(500, "Something went wrong while creating chat");
    }
 
    return res
       .status(201)
-      .json(new ApiResponse(201, existingChat, "Group chat created"));
+      .json(new ApiResponse(201, chatDetails, "Group chat created"));
 });
-
-const reNameGroupChat = asyncHandler(async (req, res) => {
-   const { chatId, chatName } = req.body;
-
-   if (!chatId || !chatName) {
-      throw new ApiError(400, "Please provide all fields");
-   }
-
-   const updatedChat = await Chat.findByIdAndUpdate(
-      chatId,
-      { chatName },
-      { new: true }
-   ).populate("users", "-password").populate("groupAdmin", "-password");
-
-   if (!updatedChat) {
-      throw new ApiError(500, "Something went wrong while renaming chatGroup");
-   }
-
-   return res
-      .status(200)
-      .json(new ApiResponse(200, updatedChat, "chatGroup renamed"));
-});
-
 
 
 const addMemberToGroupChat = asyncHandler(async (req, res) => {
@@ -165,9 +145,12 @@ const addMemberToGroupChat = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Please provide chatId and userId");
    }
 
+   const chat = await Chat.findById(chatId);
+   console.log(chat);  // Debugging log
+
    const updatedChatGroup = await Chat.findByIdAndUpdate(
       chatId,
-     // { $addToSet: { users: userId } },  // Using $addToSet to avoid duplicates
+      { $addToSet: { users: userId } },  // Using $addToSet to avoid duplicates
       { new: true }
    ).populate("users", "-password").populate("groupAdmin", "-password");
 
@@ -182,6 +165,30 @@ const addMemberToGroupChat = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, updatedChatGroup, "Member added"));
 });
 
+
+const reNameGroupChat = asyncHandler(async (req, res) => {
+   const { chatId, chatName } = req.body;
+
+   if (!chatId || !chatName) {
+      throw new ApiError(400, "Please provide all fields");
+   }
+
+   const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { chatName },
+      { new: true }
+   ).populate("users", "-password").populate("groupAdmin", "-password");
+
+   //console.log(updatedChat);  // Debugging log
+
+   if (!updatedChat) {
+      throw new ApiError(500, "Something went wrong while renaming chatGroup");
+   }
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, updatedChat, "chatGroup renamed"));
+});
 
 
 
@@ -200,9 +207,13 @@ const deleteGroupChat = asyncHandler(async (req, res) => {
 
    return res
       .status(200)
-      .json(new ApiResponse(200, deletedChat, "chatGroup deleted"));
+      .json(new ApiResponse(200, {}, "chatGroup deleted"));
 
 });
+
+
+
+
 export {
    accessChat,
    fetchChat,
