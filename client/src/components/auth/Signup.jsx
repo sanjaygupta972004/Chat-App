@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
 import axios from 'axios'
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 import { 
      FormControl,
      FormLabel,
@@ -16,7 +16,7 @@ import {
 
 const Signup = () => {
    const toast = useToast()
-   const history = useHistory()
+   const navigate = useNavigate()
 
    const[fullName, setFullName] = useState("")
    const[username, setUsername] = useState("")
@@ -113,7 +113,7 @@ const Signup = () => {
       
       const response = await axios.post("http://localhost:5000/api/v1/users/signup", data)
 
-      const responseData =  response.data
+      const responseData =  response.data.data;
       
        localStorage.setItem("userInfo", JSON.stringify(responseData));
        toast({
@@ -130,7 +130,7 @@ const Signup = () => {
          setCoverImage("")
          setProfileImage("")
          setLoading(false)
-         history.push("/chats");
+         navigate("/chat");
 
 
    } catch (error) {

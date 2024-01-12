@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
 import axios from 'axios'
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 import { 
   VStack,
   FormControl,
@@ -16,7 +16,8 @@ import {
 
 const Login = () => {
 const toast = useToast()
-const history = useHistory()
+const navigate = useNavigate()
+
 const[email, setEmail] = useState("")
 const[password, setPassword] = useState("")
 const[show, setShow] = useState(false)
@@ -47,7 +48,8 @@ if(!email || !password){
 
 try {
   const res = await axios.post("http://localhost:5000/api/v1/users/login", fieldData)
-  console.log(res.data)
+  localStorage.setItem("userInfo", JSON.stringify(res.data.data.isLoggedUser))
+  //console.log(res.data.data.isLoggedUser)
   setEmail("")
   setPassword("")
   toast({
@@ -57,7 +59,10 @@ try {
     isClosable: true,
     position: "top-right"
   })
-  history.push("/chat")
+
+  setLoading(false)
+
+  
 } catch (error) {
   console.error(error.message) 
   toast({
@@ -67,6 +72,7 @@ try {
     isClosable: true,
     position: "top-right"
   })
+
   setLoading(false)
 }
 

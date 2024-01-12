@@ -5,6 +5,9 @@ import { GoBell } from "react-icons/go";
 import { FaCircleChevronDown } from "react-icons/fa6";
 
 import { useChat } from '../context/ChatProvider.jsx';
+import ProfileModel from './ProfileModel.jsx';
+import { useNavigate } from 'react-router-dom';
+
 
 import {
       Box,
@@ -18,64 +21,77 @@ import {
       MenuItem,
       MenuDivider,
       
-
-
    } from '@chakra-ui/react';
 
-
-
+   
 const SideDrawer = () => {
    const {user} = useChat();
-   const userData = user?.data;
-
+  // console.log(user);
+   const navigate = useNavigate();
+;
    const[search, setSearch] = useState('');
    const[searchResults, setSearchResults] = useState([]);
    const[loading, setLoading] = useState(false);
    const[loadingChat, setLoadingChat] = useState(false);
 
+   const logoutHandler = ()=>{
+      localStorage.removeItem("userInfo")
+      navigate("/")
+   }
+
   return (
     <>
     <Box
-       display= "flex"
-       justifyContent = "space-between"
-       alignItems = "center"
-         p = "5px 10px 5px 7px" 
+        display = "flex"
+        justifyContent =  "space-between"
+        alignItems = "center"
+         p = "5px 5px 3px 3px" 
          w = "100%"
-         borderWidth = "6px"  
+         borderWidth = "5px"  
          bg = "white"   
+         
      >
+ 
       <Tooltip label = "Search Users to Chat" hasArrow placement='bottom'>
-         <Button variant = "ghost" className='gap-3'>
-            <IoSearch size = "25px" className='text-slate-600'/>
-             <Text d ={{base:"node",md: "flex"}} fontFamily= "sans-serif" fontSize ="md"
-              className=' text-slate-600 p-3' >Search User
+         <Button variant = "ghost" className='gap-2 flex'>
+            <IoSearch size = "22px" className='text-slate-600'/>
+             <Text  fontFamily= "sans-serif" 
+              className=' text-slate-700 text-[15px] lg:text-xl' >Search User
               </Text>
          </Button>
       </Tooltip>
-       <Text fontSize="xl" fontFamily="sen-serif"  className=" text-slate-700">
+  
+       <Text fontFamily="sen-serif"  className=" text-slate-700 text-[15px] lg:text-xl">
         Chat_Mingle
         </Text>
+      
         <div>
          <Menu>
-            <MenuButton p = "5px"  >
-               <GoBell size = "25px" className='text-slate-800 mr-3' />
+            <MenuButton p = "15px 7px 0px 0px"  >
+               <GoBell size = "22px" className='text-slate-800 mr-2' />
             </MenuButton>
 
          </Menu>
 
-         <Menu>
-            <MenuButton as = {Button} rightIcon={<FaCircleChevronDown/>}>
+         <Menu >
+            <MenuButton  as = {Button} rightIcon={<FaCircleChevronDown/>}
+             >
                <Avatar
+                  
                   size = "sm"
-                  name = {userData?.fullName}
-                  src = {userData?.profileImage}
-                  className = "mr-3"
+                  name = {user?.fullName}
+                  src =  {user?.profileImage}
+                  className = " mr-2"
                />
             </MenuButton>
             <MenuList>
-               <MenuItem>my profileImage</MenuItem>
+               <MenuItem>
+                  <ProfileModel user={user}>
+                  </ProfileModel>
+               </MenuItem>
                <MenuDivider/>
-               <MenuItem>Logout</MenuItem>
+               <MenuItem onClick={logoutHandler}>logOut
+               </MenuItem>
             </MenuList>
          </Menu>
 

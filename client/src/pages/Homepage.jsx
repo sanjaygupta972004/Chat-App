@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -17,15 +17,16 @@ import Signup from '../components/auth/Signup'
 
 const Homepage = () => {
 
-  const history = useHistory();
+  const navigate = useNavigate();
+
 
   useEffect(()=>{
     const user = JSON.parse(localStorage.getItem('userInfo'));
 
     if(user){
-       history.push('/chat');
+       navigate('/chat');
     } 
- },[history]);
+ },[navigate]);
 
   return (
     <>
