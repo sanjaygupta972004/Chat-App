@@ -29,6 +29,30 @@ const fieldData = { email, password}
 
 //console.log(fieldData)
 
+
+const handleKeyDown = (e) => {
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault(); 
+    const formElements = document.querySelectorAll(
+      "input:not([type='hidden']), select, textarea, button"
+    );
+    const currentIndex = Array.from(formElements).findIndex(
+      (element) => element === document.activeElement
+    );
+
+    let nextIndex;
+    if (e.key === "ArrowDown") {
+      nextIndex = (currentIndex + 1) % formElements.length;
+    } else if (e.key === "ArrowUp") {
+      nextIndex = (currentIndex - 1 + formElements.length) % formElements.length;
+    }
+
+    formElements[nextIndex].focus();
+  }
+};
+
+
+
 const submitHandler = async () => {
 setLoading(true)
 
@@ -82,11 +106,12 @@ try {
     <VStack spacing="10px" >
    
     <FormControl id = "email" isRequired>
-    <FormLabel>Email</FormLabel>
+    <FormLabel >Email</FormLabel>
     <Input
         placeholder="Enter Email" 
         type="text"
         onChange= {(e)=>setEmail(e.target.value)}
+        onKeyDown={handleKeyDown}
      />
   </FormControl>
   
@@ -97,6 +122,7 @@ try {
        placeholder="Enter Password"
         type= {show ? "text" : "password"}
         onChange= {(e)=>setPassword(e.target.value)}
+        onKeyDown={handleKeyDown}
      />
        <InputRightElement width="4.5rem">
           <Button h="1.75rem" size="sm" onClick={handleClick}>

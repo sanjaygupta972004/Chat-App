@@ -37,6 +37,32 @@ const Signup = () => {
       setCoverImage(e.target.files[0])
    }
 
+
+   
+const handleKeyDown = (e) => {
+   if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+     e.preventDefault(); 
+     const formElements = document.querySelectorAll(
+       "input:not([type='hidden']), select, textarea, button"
+     );
+     const currentIndex = Array.from(formElements).findIndex(
+       (element) => element === document.activeElement
+     );
+ 
+     let nextIndex;
+     if (e.key === "ArrowDown") {
+       nextIndex = (currentIndex + 1) % formElements.length;
+     } else if (e.key === "ArrowUp") {
+       nextIndex = (currentIndex - 1 + formElements.length) % formElements.length;
+     }
+ 
+     formElements[nextIndex].focus();
+   }
+ };
+ 
+
+
+
    const submitHandler = async () => {
    setLoading(true)
 
@@ -154,6 +180,7 @@ const Signup = () => {
             placeholder="Enter your fullName" 
              type="text"
              onChange= {(e)=>setFullName(e.target.value)}
+             onKeyDown={handleKeyDown}
           />
        </FormControl>
        <FormControl id = "username" isRequired>
@@ -162,6 +189,7 @@ const Signup = () => {
             placeholder="Enter Username" 
              type="text"
              onChange= {(e)=>setUsername(e.target.value)}
+             onKeyDown={handleKeyDown}
           />
        </FormControl>
 
@@ -171,6 +199,7 @@ const Signup = () => {
              placeholder="Enter Email" 
              type="text"
              onChange= {(e)=>setEmail(e.target.value)}
+             onKeyDown={handleKeyDown}
           />
        </FormControl>
        
@@ -181,6 +210,7 @@ const Signup = () => {
             placeholder="Enter Password"
              type= {show ? "text" : "password"}
              onChange= {(e)=>setPassword(e.target.value)}
+             onKeyDown={handleKeyDown}
           />
             <InputRightElement width="4.5rem">
                <Button h="1.75rem" size="sm" onClick={handleClick}>
@@ -197,6 +227,7 @@ const Signup = () => {
              placeholder="Enter Profile Picture" 
              type="file"
              onChange= {handleProfileImageChange}
+             onKeyDown={handleKeyDown}
           />
        </FormControl>
        <FormControl id = "coverImage" >
@@ -206,6 +237,7 @@ const Signup = () => {
              placeholder="Enter Cover Picture" 
              type="file"
              onChange= {handleCoverImageChange}
+             onKeyDown={handleKeyDown}
           />
        </FormControl>
        <Button
