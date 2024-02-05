@@ -46,7 +46,7 @@ const handleKeyDown = (e) => {
        "input:not([type='hidden']), select, textarea, button"
      );
      const currentIndex = Array.from(formElements).findIndex(
-       (element) => element === document.activeElement
+       (ele) => ele === document.activeElement
      );
  
      let nextIndex;

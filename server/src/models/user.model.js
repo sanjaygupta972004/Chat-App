@@ -26,10 +26,13 @@ const userSchema = new Schema(
          trim:true,
       },
       profileImage: {
-          type: String,
-          required: true,
+         type: String,
+         required: true,
       },
       coverImage: {
+         type: String,
+      },
+      refreshToken: {
          type: String,
       },
    },
@@ -80,6 +83,26 @@ const userSchema = new Schema(
       console.error(error.message)
       throw new Error("Error during generating access token")
    }
+   }
+
+
+   userSchema.methods.refreshTokenGenerator = async function(){
+      try {
+      return jwt.sign(
+         {
+            _id:this._id,
+            username:this.username,
+            email:this.email,
+         },
+         process.env.JWT_REFRESH_TOKEN_SECRET,
+         {
+            expiresIn:process.env.JWT_REFRESH_TOKEN_EXPIRY_TIME,
+         }
+      )
+      } catch (error) {
+         console.error(error.message)
+         throw new Error("Error during generating refresh token")
+      }
    }
 
 

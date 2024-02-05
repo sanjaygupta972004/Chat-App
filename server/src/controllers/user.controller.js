@@ -4,6 +4,34 @@ import {asyncHandler} from '../utils/asyncHandler.js';
 import { User } from '../models/user.model.js';
 import { upLoadOnCloudinary } from '../utils/cloudinary.js';
 
+const generatorAccessTokenAndRefreshToken = async (id) => {
+   try {
+      const user = await User.findById(id);
+      if(!user){
+         throw new ApiError(404, "User not found")
+      }
+
+      const accessToken = await user.accessTokenGenerator();
+      const refreshToken = await user.refreshTokenGenerator();
+
+      if (!accessToken || !refreshToken) {
+         throw new ApiError(500, "Error during generating access token and refresh token")
+      }
+      
+      user.refreshToken = refreshToken;
+      user.save({
+         validateBeforeSave: false
+      });
+
+      return {
+         accessToken,
+         refreshToken
+      }
+   } catch (error) {
+      new ApiError(500, "Error during generating access token and refresh token")
+   }
+}
+
 
 const signUp = asyncHandler(async(req,res)=>{
  
@@ -21,7 +49,7 @@ const signUp = asyncHandler(async(req,res)=>{
    const localPathProfileImage = req.files?.profileImage[0]?.path;
 
   // console.log(localPathProfileImage)
-    
+
    if(!localPathProfileImage){
       throw new ApiError(400,"Profile Image is required")
    }
@@ -51,7 +79,6 @@ const signUp = asyncHandler(async(req,res)=>{
    return res
    .status(201)
    .json(new ApiResponse(201,exitingUser,"User created successfully"))
-
 })
 
 
@@ -73,11 +100,18 @@ const logIn = asyncHandler(async(req,res)=>{
       throw new ApiError(400,"Password is incorrect")
    }
 
-   const accessToken = await user.accessTokenGenerator()
+   const {accessToken,refreshToken} = await generatorAccessTokenAndRefreshToken(user._id)
 
-   const isLoggedUser = await User.findOne({email}).select("-password")
+   const options = {
+      httpOnly:true,
+   
+   }
+
+   const isLoggedUser = await User.findOne({email}).select("-password -refreshToken")
 
    return res
+   .cookie("accessToken",accessToken,options)
+   .cookie("refreshToken",refreshToken,options)
    .status(200)
    .json(new ApiResponse(200,{accessToken,isLoggedUser},"User logged in successfully"))
 
