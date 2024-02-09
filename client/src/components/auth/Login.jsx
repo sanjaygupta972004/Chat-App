@@ -70,37 +70,37 @@ if(!email || !password){
 }
 
 
-try {
-  const res = await axios.post("http://localhost:5000/api/v1/users/login", fieldData)
-  localStorage.setItem("userInfo", JSON.stringify(res.data.data.isLoggedUser))
-  //console.log(res.data.data.isLoggedUser)
-  setEmail("")
-  setPassword("")
-  toast({
-    title: "Login Successful",
-    status: "success",
-    duration: 5000,
-    isClosable: true,
-    position: "top-right"
-  })
+// try {
+//   const res = await axios.post("http://localhost:5000/api/v1/users/login", fieldData)
+//   localStorage.setItem("userInfo", JSON.stringify(res.data.data.isLoggedUser))
+//   //console.log(res.data.data.isLoggedUser)
+//   setEmail("")
+//   setPassword("")
+//   toast({
+//     title: "Login Successful",
+//     status: "success",
+//     duration: 5000,
+//     isClosable: true,
+//     position: "top-right"
+//   })
 
-  setLoading(false)
+//   setLoading(false)
 
   
-} catch (error) {
-  console.error(error.message) 
-  toast({
-    title: "Login Failed",
-    status: "error",
-    duration: 5000,
-    isClosable: true,
-    position: "top-right"
-  })
+// } catch (error) {
+//   console.error(error.message) 
+//   toast({
+//     title: "Login Failed",
+//     status: "error",
+//     duration: 5000,
+//     isClosable: true,
+//     position: "top-right"
+//   })
 
-  setLoading(false)
-}
+//   setLoading(false)
+// }
 
-}
+ }
 
   return (
     <VStack spacing="10px" >

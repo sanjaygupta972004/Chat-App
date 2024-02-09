@@ -133,43 +133,43 @@ const handleKeyDown = (e) => {
    data.append("password", password)
    data.append("username", username)
 
-  // console.log("FormData:", data);
+   console.log("FormData:", data);
 
-    try {
+   //  try {
       
-      const response = await axios.post("http://localhost:5000/api/v1/users/signup", data)
+   //    const response = await axios.post("http://localhost:5000/api/v1/users/signup", data)
 
-      const responseData =  response.data.data;
+   //    const responseData =  response.data.data;
       
-       localStorage.setItem("userInfo", JSON.stringify(responseData));
-       toast({
-         title: "Account Created Successfully",
-         status: "success",
-         duration: 5000,
-         isClosable: true,
-       })
+   //     localStorage.setItem("userInfo", JSON.stringify(responseData));
+   //     toast({
+   //       title: "Account Created Successfully",
+   //       status: "success",
+   //       duration: 5000,
+   //       isClosable: true,
+   //     })
    
-         setFullName("")
-         setUsername("")
-         setEmail("")
-         setPassword("")
-         setCoverImage("")
-         setProfileImage("")
-         setLoading(false)
-         navigate("/chat");
+   //       setFullName("")
+   //       setUsername("")
+   //       setEmail("")
+   //       setPassword("")
+   //       setCoverImage("")
+   //       setProfileImage("")
+   //       setLoading(false)
+   //       navigate("/chat");
 
 
-   } catch (error) {
-      console.error(error.message)
-      toast({
-         title: "Something went wrong while creating account",
-         status: "error",
-         duration: 3000,
-         isClosable: true,
-         position: "top-right"
-       })
-         setLoading(false)
-   }
+   // } catch (error) {
+   //    console.error(error.message)
+   //    toast({
+   //       title: "Something went wrong while creating account",
+   //       status: "error",
+   //       duration: 3000,
+   //       isClosable: true,
+   //       position: "top-right"
+   //     })
+   //       setLoading(false)
+   // }
 }
   
   return (

@@ -8,8 +8,8 @@ import { image } from './assets/bgcImage.js';
 function App() {
   return (
   
-    <div className= "bg-center bg-cover flex min-h-[100vh]" style={{backgroundImage: ` url(${image.url3})`}}>
-  
+     <div className= "bg-center bg-cover flex min-h-[100vh]" style={{backgroundImage: ` url(${image.url3})`}}>
+         <h2>kjhkhkdshgfjkg</h2>
         <Routes>
           <Route path="/" exact element = {<Homepage/>} />
           <Route path="/chat"  element = {<Chatpage/>} />
