@@ -6,8 +6,8 @@ import { Input } from '../ui/input'
 import { Link } from 'react-router-dom'
 
 const signSchema = z.object({
-  email: z.string().email().min(1),
-  password: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min((8), "Password must be at least 8 characters"),
 })
 
 type FormFilld = z.infer<typeof signSchema>

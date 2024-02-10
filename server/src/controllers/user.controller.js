@@ -39,7 +39,8 @@ const signUp = asyncHandler(async(req,res)=>{
    if(!fullName || !username || !password || !email){
       throw new ApiError(400,"All fields are required")
    }
-   //console.log(req.files)
+   // console.log(req.body)
+   // console.log(req.files)
 
    const oldUser = await User.findOne({email})
    if(oldUser){
@@ -54,12 +55,15 @@ const signUp = asyncHandler(async(req,res)=>{
       throw new ApiError(400,"Profile Image is required")
    }
 
-   const localPathCoverImage = req.files?.coverImage[0]?.path;
-
+   let localPathCoverImage 
+   if(req.files?.coverImage){
+      localPathCoverImage = req.files?.coverImage[0]?.path;
+   }
  
 
    const profileImage = await upLoadOnCloudinary(localPathProfileImage);
    const coverImage = await upLoadOnCloudinary(localPathCoverImage);
+
 
    if(!profileImage){
       throw new ApiError(500,"Error uploading profile image")

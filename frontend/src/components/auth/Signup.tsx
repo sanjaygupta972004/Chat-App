@@ -4,23 +4,27 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {z} from 'zod'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
+import { useToast } from '../ui/use-toast' 
 import { useState } from 'react'
+import axios,{AxiosError} from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 const signSchema = z.object({
    fullName: z.string().min(5),
    username: z.string().min(5).trim(),
    email: z.string().email().includes('@'),
    password: z.string().min(8),
-   profileImage: z.string().nullable(),
-   coverImage: z.string().nullable()
+ 
 })
 
  type FormFilld = z.infer<typeof signSchema>
 
 const Signup = () => {
+   const {toast} = useToast();
+   const navigate = useNavigate();
 
-   const [profileImage, setProfileImage] = useState<string | null>(null);
-   const [coverImage,setCoverImage] = useState<string | null>(null);
+   const [profileImage, setProfileImage] = useState<File| null>(null);
+   const [coverImage,setCoverImage] = useState<File | null>(null);
 
 
    const { register, handleSubmit,setError, formState: { errors,isSubmitting } } = useForm<FormFilld>({
@@ -29,9 +33,7 @@ const Signup = () => {
          username: '',
          email: '',
          password: '',
-         profileImage: '',
-         coverImage: ''
-        
+   
       },
       resolver:zodResolver(signSchema)
    });
@@ -40,7 +42,7 @@ const Signup = () => {
    const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
-        setProfileImage(file.name);
+        setProfileImage(file);
       
     };
    }
@@ -48,10 +50,8 @@ const Signup = () => {
 
    const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        setCoverImage(file.name);
-      
-    };
+           setCoverImage(e.target.files[0]);
+      }
    }
   
    const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -80,19 +80,65 @@ const Signup = () => {
   
     
    const onSubmit: SubmitHandler<FormFilld> = async(data) => {
-      data.profileImage = profileImage;
-      data.coverImage = coverImage;
-      console.log(data);
+    const formData = new FormData();
+      formData.append('fullName', data.fullName);
+      formData.append('username', data.username);
+      formData.append('email', data.email);
+      formData.append('password', data.password);
+      if (profileImage) {
+         formData.append('profileImage', profileImage);
+      }
+      if (coverImage) {
+         formData.append('coverImage', coverImage);
+      }
+     // console.log(formData );
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      
-    } catch (error) {
-      setError('root', {
-         type: 'manual',
-         message: "Something went wrong!"
+     
+      const response =  await axios.post('http://localhost:5000/api/v1/users/signup', formData);
+      console.log(response.data);
+      toast({
+         description: "Account created successfully",
       })
 
+      navigate('/login');
+
+
+    } catch (error) {
+       
+      const err = error as AxiosError;
+      if (err.response) {
+         console.log(err.response.data);
+         setError('root', {
+            type: 'manual',
+            message: (err.response.data as {message ?: string })?.message|| "Error occurred while creating account" 
+         })
+      }else if (err.request) {
+         console.log(err.request);
+         setError('root', {
+            type: 'manual',
+            message: "Network Error"
+         })
+      }
+
+         else if(error instanceof Error){
+            console.log(error.message);
+            setError('root', {
+               type: 'manual',
+               message: error.message as string // Cast error.message to string
+            })
+         }
+         else if (error && typeof error === 'object' && 'message' in error) {
+            setError('root', {
+               type: 'manual',
+               message: error.message as string 
+            })
+         }
+         else {
+            setError('root', {
+               type: 'manual',
+               message: "An error occurred while creating account"
+            })
+         }
    };
 }
 
@@ -181,7 +227,7 @@ const Signup = () => {
                   
                    <div className="flex items-center justify-between">
                       <Button
-                        className='hover:bg-blue-700 hover:text-white text-gray-700 border-blue-700'
+                        className='hover:bg-blue-700 hover:text-white text-gray-800 border-blue-700'
                         variant= "outline"
                         type="submit"
                         onKeyDown ={(event: React.KeyboardEvent) => handleKeyDown(event)}
@@ -190,7 +236,7 @@ const Signup = () => {
                       </Button>
                   </div>
                   <div>
-                     {errors.root && <p className="text-red-500 text-xs italic">{errors.root.message}</p>}
+                     {errors.root && <p className="text-red-600 text-[15px] font-mono">{errors.root.message}</p>}
                   </div>
                 
                </form>
@@ -201,8 +247,6 @@ const Signup = () => {
        </div>  
    )
 }
-   
-
 
 
 export default Signup
