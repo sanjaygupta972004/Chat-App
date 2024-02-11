@@ -1,6 +1,15 @@
 import mongoose, {Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import {
+   AvailableLoginType,
+   AvailableUserRoles,
+   UserRolesEnum,
+   UserLoginType,
+   TEMPORARY_EXPIRY_TOKEN_TIME,
+} from "../constants";
+import  CryptoJS from "crypto-js";
+
 
 const userSchema = new Schema(
    {
@@ -14,6 +23,10 @@ const userSchema = new Schema(
       username: {
          type: String,
          require: true,
+         unique: true,
+         trim:true,
+         lowercase:true,
+         index:true,
       },
       password: {
          type: String,
@@ -24,6 +37,7 @@ const userSchema = new Schema(
          type: String,
          required:true,
          trim:true,
+         unique:true,
       },
       profileImage: {
          type: String,
@@ -31,6 +45,32 @@ const userSchema = new Schema(
       },
       coverImage: {
          type: String,
+      },
+      role: {
+         type: String,
+         enum: AvailableUserRoles,
+         default: UserRolesEnum.USER,
+      },
+      loginType: {
+         type: String,
+         enum: AvailableLoginType,
+         default: UserLoginType.EMAIL_PASSWORD,
+      },
+      isEmailVerified: {
+         type: Boolean,
+         default: false,
+      },
+      forgotPasswordToken: {
+         type: String,
+      },
+      forgotPasswordTokenExpiry: {
+         type: Date,
+      },
+      emailVerificationToken: {
+         type: String,
+      },
+      emailVerificationTokenExpiry: {
+         type: Date,
       },
       refreshToken: {
          type: String,
@@ -52,7 +92,6 @@ const userSchema = new Schema(
          
       }
    })
-
 
    userSchema.methods.comparePassword = async function(password){
       try {
@@ -105,5 +144,13 @@ const userSchema = new Schema(
       }
    }
 
+
+   userSchema.methods.generateTemporaryToken = async function(){
+   
+      const unHashedToken =  `${this._id}${Date.now()}`; 
+      const hashedToken =  CryptoJS.SHA256(unHashedToken).toString(CryptoJS.enc.Base64)
+      const expiryTime = Date.now() + TEMPORARY_EXPIRY_TOKEN_TIME; 
+      return {unHashedToken,hashedToken,expiryTime}
+   }
 
    export const User = mongoose.model("User",userSchema)
