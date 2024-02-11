@@ -8,7 +8,7 @@ const Home = () => {
       <>
         <div className="">
           <img src={bgImage} className="absolute inset-0 w-full h-full object-cover" alt="bg-image" />
-          <div className="absolute inset-0 container flex justify-center lg:items-center flex-col lg:flex-row gap-6">
+          <div className="absolute inset-0 container flex items-center justify-between lg:justify-around mt-3 lg:items-center flex-col lg:flex-row">
             <div className="max-w-md text-center">
               <h1 className="text-pink-500 text-xl lg:text-4xl font-bold  font-serif underline">Converse with Social Pulse</h1>
               <div className="flex justify-around mt-6">

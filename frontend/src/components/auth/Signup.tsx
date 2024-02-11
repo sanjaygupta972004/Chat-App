@@ -4,10 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {z} from 'zod'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import { useToast } from '../ui/use-toast' 
+
 import { useState } from 'react'
 import axios,{AxiosError} from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 const signSchema = z.object({
    fullName: z.string().min(5),
@@ -20,7 +21,7 @@ const signSchema = z.object({
  type FormFilld = z.infer<typeof signSchema>
 
 const Signup = () => {
-   const {toast} = useToast();
+ 
    const navigate = useNavigate();
 
    const [profileImage, setProfileImage] = useState<File| null>(null);
@@ -96,10 +97,9 @@ const Signup = () => {
      
       const response =  await axios.post('http://localhost:5000/api/v1/users/signup', formData);
       console.log(response.data);
-      toast({
-         description: "Account created successfully",
-      })
-
+       
+      toast.success('Account created successfully');
+       
       navigate('/login');
 
 

@@ -4,6 +4,10 @@ import { z } from 'zod'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Link } from 'react-router-dom'
+import axios, {AxiosError} from 'axios'
+import {toast} from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
+import { ButtonHTMLAttributes, useState } from 'react'
 
 const signSchema = z.object({
   email: z.string().email(),
@@ -13,6 +17,14 @@ const signSchema = z.object({
 type FormFilld = z.infer<typeof signSchema>
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState<Boolean>(false);
+
+  const handleShowPassword = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setShowPassword((prev) => !prev);
+  }
+
   const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<FormFilld>({
     defaultValues: {
       email: '',
@@ -43,14 +55,34 @@ const Login = () => {
   };
 
   const onSubmit: SubmitHandler<FormFilld> = async (data) => {
-    console.log(data);
+ 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response =  await axios.post('http://localhost:5000/api/v1/users/login', data, {
+       withCredentials: true
+      }
+      );
+      const {accessToken,refreshToken} = response.data;
+      localStorage.setItem('accessToken',accessToken);
+      localStorage.setItem('refreshToken',refreshToken);
+      toast.success('Login Successful');
+      data.email = '';
+      data.password = '';
+      navigate('/chat');
+
     } catch (error) {
-      setError('root', {
-        type: 'manual',
-        message: "Something went wrong!"
-      })
+      const err = error as AxiosError;
+      if (err.response) {
+        console.log(err.response.data);
+        setError('root', {
+          type: 'manual',
+          message: (err.response.data as {message ?: string })?.message|| "Error occurred while login" 
+        })
+      }else{
+        setError('root', {
+          type: 'manual',
+          message: "Error occurred while login" 
+        })
+      }
     };
   }
 
@@ -61,22 +93,31 @@ const Login = () => {
           <h1 className="text-xl font-mono text-center mb-4 shadow-lg text-gray-700 p-2">Login<span className='text-blue-400 underline font-sans'>ChatApp</span></h1>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="email">Email</label>
-            <Input {...register("email")} id="email" type="text" placeholder="Email" onKeyDown={handleKeyDown} />
+        
+            <Input {...register("email")} id="email" type= "text" placeholder="Email" onKeyDown={handleKeyDown} />
+           
             {errors.email && <p className="text-red-500 text-xs italic">{errors.email.message}</p>}
+            
           </div>
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="password">Password</label>
-            <Input {...register("password")} id="password" type="password" placeholder="*************" onKeyDown={handleKeyDown} />
+            <div className='flex justify-between  gap-2'>
+            <Input {...register("password")} id="password" type= {showPassword?"hide":"password"} placeholder="*************" onKeyDown={handleKeyDown} />
+            <Button variant={"outline"}
+             onClick={handleShowPassword} type='submit' className='text-xl font-thin  text-gray-500 hover:text-gray-700'>
+             {showPassword ? "Hide" : "Show" }
+            </Button>
+            </div>
             {errors.password && <p className="text-red-500 text-xs italic">{errors.password.message}</p>}
           </div>
           <div className="flex items-center justify-between">
-            <Button className='hover:bg-blue-700 hover:text-white text-gray-700 border-blue-700' variant="outline" type="submit" disabled={isSubmitting}>
+            <Button className='hover:bg-blue-700 hover:text-white text-gray-700 border-blue-700 font-thin text-xl' variant="outline" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Login'}
             </Button>
           </div>
           <div className='mt-4'>
-            {errors.root && <p className="text-red-500 text-xs italic">{errors.root.message}</p>}
-            <p className="text-gray-600 text-[20px] font-mono">Don't have an account ? 
+            {errors.root && <p className="text-red-500 text-[12px] font-thin">{errors.root.message}</p>}
+            <p className="text-gray-900 text-[20px] font-mono">Don't have an account ? 
              <Button 
               variant={"link"}>
                <Link to = "/signup" className='font-mono text-xl hover:text-orange-400 underline'>Signup</Link>

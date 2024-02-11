@@ -9,11 +9,12 @@ function App() {
   return (
   
      <div className= "bg-center bg-cover flex min-h-[100vh]" style={{backgroundImage: ` url(${image.url3})`}}>
-         <h2>kjhkhkdshgfjkg</h2>
+        <div className="absolute top-0 left-0 w-full h-full bg-black  z-[-1]">
         <Routes>
           <Route path="/" exact element = {<Homepage/>} />
           <Route path="/chat"  element = {<Chatpage/>} />
          </Routes>
+         </div>
    </div>
   );
 }
