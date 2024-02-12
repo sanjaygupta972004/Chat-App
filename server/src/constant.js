@@ -8,7 +8,7 @@ export const UserRolesEnum = {
 
 };
 
-export const AvailableUserRoles = object.values(UserRolesEnum);   
+export const AvailableUserRoles = Object.values(UserRolesEnum);   
 
 
 
@@ -18,7 +18,7 @@ export const UserLoginType = {
   EMAIL_PASSWORD: "EMAIL_PASSWORD",
 };
 
-export const AvailableLoginType = object.values(UserLoginType);
+export const AvailableLoginType = Object.values(UserLoginType);
 
 
 

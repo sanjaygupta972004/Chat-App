@@ -7,7 +7,7 @@ import {
    UserRolesEnum,
    UserLoginType,
    TEMPORARY_EXPIRY_TOKEN_TIME,
-} from "../constants";
+} from "../constant.js";
 import  CryptoJS from "crypto-js";
 
 
@@ -145,11 +145,11 @@ const userSchema = new Schema(
    }
 
 
-   userSchema.methods.generateTemporaryToken = async function(){
+   userSchema.methods.emailGenerateTemporaryToken = async function(){
    
-      const unHashedToken =  `${this._id}${Date.now()}`; 
-      const hashedToken =  CryptoJS.SHA256(unHashedToken).toString(CryptoJS.enc.Base64)
-      const expiryTime = Date.now() + TEMPORARY_EXPIRY_TOKEN_TIME; 
+      const unHashedToken =  await `${this._id}${Date.now()}`; 
+      const hashedToken =  await CryptoJS.SHA256(unHashedToken).toString(CryptoJS.enc.Base64)
+      const expiryTime =  await Date.now() + TEMPORARY_EXPIRY_TOKEN_TIME; 
       return {unHashedToken,hashedToken,expiryTime}
    }
 

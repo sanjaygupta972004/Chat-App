@@ -3,6 +3,12 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import {asyncHandler} from '../utils/asyncHandler.js';
 import { User } from '../models/user.model.js';
 import { upLoadOnCloudinary } from '../utils/cloudinary.js';
+import {
+    sendEmail,
+     emailVerificationMailgenContent,
+     forgotPasswordMailgenContent
+} from '../utils/mail.js';
+import { UserRolesEnum } from '../constant.js';
 
 const generatorAccessTokenAndRefreshToken = async (id) => {
    try {
@@ -35,7 +41,7 @@ const generatorAccessTokenAndRefreshToken = async (id) => {
 
 const signUp = asyncHandler(async(req,res)=>{
  
-   const {fullName,username,password,email} = req.body;
+   const {fullName,username,password,email,role} = req.body;
    if(!fullName || !username || !password || !email){
       throw new ApiError(400,"All fields are required")
    }
@@ -73,16 +79,51 @@ const signUp = asyncHandler(async(req,res)=>{
       username:username.toLowerCase(),
       password,
       email,
+      isEmailVerified:false,
+      role:role|| UserRolesEnum.USER,
       profileImage:profileImage.url,
       coverImage:coverImage.url
    })
 
-   await user.save();
-   const exitingUser = await User.findOne({email}).select("-password")
+   const {unHashedToken,hashedToken,expiryTime} = await user.emailGenerateTemporaryToken();
+   
+   console.log(unHashedToken,hashedToken,expiryTime)
+
+   user.emailVerificationToken = hashedToken;
+   user.emailVerificationTokenExpiry = expiryTime;
+
+   user.save({validateBeforeSave:false})
+
+   await sendEmail({
+      email:user?.email,
+      subject: "please verify your email",
+      mailgenContent: emailVerificationMailgenContent(
+         user?.username,
+         `${req.protocol}://${req.get(
+            "host"
+          )}/api/v1/users/verify-email/${unHashedToken}`
+         // `http://localhost:3000/api/v1/auth/verify-email/${unHashedToken}`
+         
+      )
+   })
+
+
+   const exitingUser = await User.findById({_id:user._id}).select("-password -refreshToken -emailVerificationToken -emailVerificationTokenExpiry")
+   
+   if(!exitingUser){
+      throw new ApiError(500,"something went worng while creating user")
+   }
 
    return res
    .status(201)
-   .json(new ApiResponse(201,exitingUser,"User created successfully"))
+   .json(new ApiResponse(201,{user:exitingUser},"User created successfully"))
+})
+
+   
+
+const verifyEmail = asyncHandler(async(req,res)=>{
+   
+
 })
 
 
