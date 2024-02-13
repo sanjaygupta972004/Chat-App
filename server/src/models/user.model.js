@@ -153,4 +153,13 @@ const userSchema = new Schema(
       return {unHashedToken,hashedToken,expiryTime}
    }
 
+   userSchema.methods.generateTemporaryPasswordResetToken = async function(){
+      const unHashedToken =   `${this._id}${Date.now()+5*60*1000}`; 
+      const hashedToken =  await CryptoJS.SHA256(unHashedToken).toString(CryptoJS.enc.Base64)
+      const expiryTime =   Date.now() + TEMPORARY_EXPIRY_TOKEN_TIME;
+
+      return {unHashedToken,hashedToken,expiryTime}
+
+   }
+
    export const User = mongoose.model("User",userSchema)
