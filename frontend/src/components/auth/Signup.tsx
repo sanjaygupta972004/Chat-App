@@ -26,6 +26,7 @@ const Signup = () => {
 
    const [profileImage, setProfileImage] = useState<File| null>(null);
    const [coverImage,setCoverImage] = useState<File | null>(null);
+   
 
 
    const { register, handleSubmit,setError, formState: { errors,isSubmitting } } = useForm<FormFilld>({
