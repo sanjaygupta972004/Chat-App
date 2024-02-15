@@ -95,7 +95,7 @@ const Signup = () => {
      // console.log(formData );
     try {
      
-      const response =  await axios.post('http://localhost:5000/api/v1/users/signup', formData);
+      const response =  await axios.post('/api/v1/users/signup', formData);
       console.log(response.data);
        
       toast.success('Account created successfully');

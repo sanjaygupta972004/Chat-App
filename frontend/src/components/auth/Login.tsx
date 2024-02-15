@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import axios, {AxiosError} from 'axios'
 import {toast} from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
-import { ButtonHTMLAttributes, useState } from 'react'
+import { useState } from 'react'
 
 const signSchema = z.object({
   email: z.string().email(),
@@ -57,7 +57,7 @@ const Login = () => {
   const onSubmit: SubmitHandler<FormFilld> = async (data) => {
  
     try {
-      const response =  await axios.post('http://localhost:5000/api/v1/users/login', data, {
+      const response =  await axios.post('/api/v1/users/login', data, {
        withCredentials: true
       }
       );
