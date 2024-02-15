@@ -4,14 +4,18 @@ import {
     verifyEmail,
     resendVerificationEmail,
     forgotPasswordRequest,
-    resetPassword,
+    resetForgotPassword,
     logIn,
     logOut,
-    getUserRole,
-    getAllUsers
+    assignRole,
+    getAllUsers,
+    getCurrentUser,
+    handleSolcialLogin
    } from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
-import {jwtVerify} from "../middleware/auth.middleware.js"
+import {jwtVerify,verifyPermission} from "../middleware/auth.middleware.js"
+import { UserRolesEnum } from "../constant.js";
+import passport from "passport";
 
 const router = Router();
 
@@ -25,16 +29,35 @@ router.route("/signup").post(
    )
 router.route("/verify-email/:varificationToken").get(verifyEmail)
 router.route("/login").post(logIn)
-router.route("/resend-verification-email").post(resendVerificationEmail)
 router.route("/forgot-password").post(forgotPasswordRequest)
-router.route("/reset-password/:resetPasswordToken").get(resetPassword)
-router.route("/get-user-role/c/:_id").post(jwtVerify,getUserRole)
+router.route("/reset-forgot-password/:resetToken").post(resetForgotPassword)
+
 
 
 
 // secured route
 router.route("/logout").get(jwtVerify,logOut)
-router.route("/getUser").get(jwtVerify,getAllUsers)
+router.route("/getAllUsers").get(jwtVerify,getAllUsers)
+router.route("/getCurrentUser").get(jwtVerify,getCurrentUser)
+router.route("/assignRole/c/:userId").post(jwtVerify, verifyPermission([UserRolesEnum.ADMIN]), assignRole)
+router.route("/resend-verification-email").post(jwtVerify,resendVerificationEmail)
+
+
+
+// SSO routes
+router.route("/google").get(
+   passport.authenticate("google", {
+     scope: ["profile", "email"],
+   }),
+   (req, res) => {
+     res.send("redirecting to google...");
+   }
+ );
+
+ router
+  .route("/google/callback")
+  .get(passport.authenticate("google"), handleSolcialLogin);
+
 
 export default router;
 

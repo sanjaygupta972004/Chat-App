@@ -4,13 +4,13 @@ import {asyncHandler} from '../utils/asyncHandler.js';
 import { User } from '../models/user.model.js';
 import { upLoadOnCloudinary } from '../utils/cloudinary.js';
 import {
-    sendEmail,
+     sendEmail,
      emailVerificationMailgenContent,
      forgotPasswordMailgenContent
 } from '../utils/mail.js';
 import { UserRolesEnum } from '../constant.js';
 import  CryptoJS from "crypto-js";
-import { isValidObjectId } from 'mongoose';
+import mongoose from "mongoose";
 
 const generatorAccessTokenAndRefreshToken = async (id) => {
    try {
@@ -187,7 +187,7 @@ const logIn = asyncHandler(async(req,res)=>{
    
    }
 
-   const isLoggedUser = await User.findOne({email}).select("-password -refreshToken -emailVerificationToken -emailVerificationTokenExpiry")
+   const isLoggedUser = await User.findOne({email}).select("-password -refreshToken -emailVerificationToken -emailVerificationTokenExpiry -forgotPasswordToken -forgotPasswordTokenExpiry")
 
    return res
    .cookie("accessToken",accessToken,options)
@@ -276,7 +276,7 @@ const forgotPasswordRequest = asyncHandler(async(req,res)=>{
 
 
 
-const resetPassword = asyncHandler(async(req,res)=>{
+const resetForgotPassword = asyncHandler(async(req,res)=>{
    const {password} = req.body;
    const {resetPasswordToken} = req.params;
 
@@ -377,12 +377,12 @@ return res
 
 
 
-const getUserRole = asyncHandler(async(req,res)=>{
-const {_id} = req.params;
+const assignRole = asyncHandler(async(req,res)=>{
+const {userId} = req.params;
 const {role} = req.body
 
-if(isValidObjectId(_id)){
-   new ApiError(400, "invalid user id")   
+if(mongoose.Types.ObjectId.isValid(userId)){
+   new ApiError(400, "invalid user id")
 }
 
 if(!role){
@@ -390,7 +390,7 @@ if(!role){
 }
 
 const user = await User.findByIdAndUpdate({
-   _id:_id
+   _id:userId
 },{
    role: role
 },{
@@ -406,8 +406,6 @@ return res
      .json(new ApiResponse(200,{user},"User role updated successfully"))
 
 })
-
-
 
 
 
@@ -429,7 +427,11 @@ const getAllUsers = asyncHandler(async (req, res) => {
        ]
    } : {};
 
-   const users = await User.find(keyword).find({_id:{$ne:req.user._id}}).select("-password");
+   const users = await User.find(keyword).find({_id:{$ne:req.user?._id}}).select("-password -refreshToken -emailVerificationToken -emailVerificationTokenExpiry -forgotPasswordToken -forgotPasswordTokenExpiry");
+   
+   if(users.length === 0){
+      throw new ApiError(404, "No user found")
+   }
 
    return res
        .status(200)
@@ -437,7 +439,57 @@ const getAllUsers = asyncHandler(async (req, res) => {
 });
 
 
+const getCurrentUser = asyncHandler(async (req, res) => {
+ const {_id} = req.user?._id;
+   if(mongoose.Types.ObjectId.isValid(_id)){
+      new ApiError(400, "invalid user id")
+   }
 
+   const user = await User.findById(_id).select("-password -refreshToken -emailVerificationToken -emailVerificationTokenExpiry -forgotPasswordToken -forgotPasswordTokenExpiry");
+   
+   if(user._id.toString() !== req.user?._id){
+      throw new ApiError(401, "Unauthorized")
+   }
+   
+   if(!user){
+      throw new ApiError(404, "No user found")
+   }
+
+   return res
+       .status(200)
+       .json(new ApiResponse(200, user, "User fetched successfully"));
+})
+
+
+const handleSolcialLogin = asyncHandler(async(req,res)=>{
+   const {_id} = req.user?._id;
+   if(mongoose.Types.ObjectId.isValid(_id)){
+      new ApiError(400, "invalid user id")
+   }
+
+   const user = await User.findById(_id).select("-password -refreshToken -emailVerificationToken -emailVerificationTokenExpiry -forgotPasswordToken -forgotPasswordTokenExpiry");   
+   if(user._id.toString() !== req.user?._id.toString()){
+      throw new ApiError(401, "Unauthorized")
+   }
+
+   if(!user){
+      throw new ApiError(404, "No user found")
+   }
+
+   const {accessToken,refreshToken} = await generatorAccessTokenAndRefreshToken(user._id)
+
+   const options = {
+      httpOnly:true,
+   }
+
+   return res
+   .cookie("accessToken",accessToken,options)
+   .cookie("refreshToken",refreshToken,options)
+   .status(200)
+   .redirect(
+      `${process.env.CLIENT_SSO_URL}?accessToken=${accessToken}&refreshToken=${refreshToken}`
+    );
+})
 
 
 
@@ -445,11 +497,13 @@ export {
    signUp,
    verifyEmail,
    forgotPasswordRequest,
-   resetPassword,
+   resetForgotPassword,
    refreshAccessToken,
    resendVerificationEmail,
    logIn,
    logOut,
-   getUserRole,
-   getAllUsers
+   assignRole,
+   getCurrentUser,
+   getAllUsers,
+   handleSolcialLogin
 }

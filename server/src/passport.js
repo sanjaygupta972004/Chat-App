@@ -1,6 +1,6 @@
-import {strategy as GoogleStrategy} from 'passport-google-oauth20';    
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import passport from 'passport';
-import User from './models/user.model.js';
+import {User}  from './models/user.model.js';
 import { ApiError } from './utils/ApiError.js';
 import {
    UserLoginType,
@@ -32,12 +32,12 @@ passport.use(
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             callbackURL: process.env.GOOGLE_CALLBACK_URL,
-
+         
          },
          async(accessToken, refreshToken, profile, next) => {
-           const user = User.findOne(profile._json.email)
+           const user =  await User.findOne({email:profile._json.email})
              if(user){
-             if(user.UserLoginType !== UserLoginType.GOOGLE){
+             if(user.loginType !== loginType.GOOGLE){
                 return next(new ApiError(400,
                    "you have already resistered with this email, please login with your email and password"
                   ),null)
@@ -63,7 +63,7 @@ passport.use(
           return next(new ApiError(500,"something went wrong while creating user"),null)
          }else{
             next(null,newUser)
-      }
+         }
    
       }
    }
@@ -72,25 +72,8 @@ passport.use(
 )
 
    
-// passport.use(
-//    new strategy(
-//          {
-//             clientID: process.env.GOOGLE_CLIENT_ID,
-//             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//             callbackURL: process.env.GOOGLE_CALLBACK_URL,
-//             scope: ['email', 'profile']
-//          },
-//          (accessToken, refreshToken, profile, done) => {
-//             return done(null, profile);
-//          }
+} catch (error) {
+   console.error(error.message)
+   new ApiError("Error during passport configuration")
+}
 
-//    )
-// )
-
-// passport.serializeUser((user, done) => {
-//    done(null, user);
-// });
-
-// passport.deserializeUser((user, done) => {
-//    done(null, user);
-// });
