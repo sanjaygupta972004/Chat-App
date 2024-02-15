@@ -55,9 +55,12 @@ router.route("/google").get(
  );
 
  router
-  .route("/google/callback")
-  .get(passport.authenticate("google"), handleSolcialLogin);
-
+  .route("/auth/google/callback")
+  .get(passport.authenticate("google",{
+      failureRedirect: "http://localhost:5173/login",
+      successRedirect: "http://localhost:5173/home",
+    }));
+    
 
 export default router;
 
