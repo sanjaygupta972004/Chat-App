@@ -33,15 +33,12 @@ const sendEmail = async (options) => {
 
 
    try {
-      await transporter.sendMail(mail);
-      
+     await transporter.sendMail(mail);
    } catch (error) {
       console.log("Error: email service failed to send email")
       console.error(error.message)
    }
 }
-
-
 
 const emailVerificationMailgenContent = (username, verificationUrl) => {
    return {
