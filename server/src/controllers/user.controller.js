@@ -408,6 +408,37 @@ return res
 })
 
 
+const changePassword = asyncHandler(async(req,res)=>{
+   const {oldPassword,newPassword} = req.body;
+   const {_id} = req.user?._id;
+   if(mongoose.Types.ObjectId.isValid(_id)){
+      new ApiError(400, "invalid user id")
+   }
+   if(!oldPassword || !newPassword){
+      new ApiError(400, "Old password and new password is required")
+   }
+
+   const user = await User.findById(_id)
+
+   if(user._id.toString() !== req.user?._id.toString()){
+      throw new ApiError(401, "Unauthorized")
+   }
+
+   const isPasswordCorrect = await user.comparePassword(oldPassword)
+   if(!isPasswordCorrect){
+      throw new ApiError(400,"Old password is incorrect")
+   }
+
+   user.password = newPassword;
+   user.save({validateBeforeSave:false})
+
+   return res
+       .status(200)
+       .json(new ApiResponse(200,{},"Password changed successfully"))
+})
+
+
+
 
 const getAllUsers = asyncHandler(async (req, res) => {
    const keyword = req.query.search ? {
@@ -447,7 +478,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
    const user = await User.findById(_id).select("-password -refreshToken -emailVerificationToken -emailVerificationTokenExpiry -forgotPasswordToken -forgotPasswordTokenExpiry");
    
-   if(user._id.toString() !== req.user?._id){
+   if(user._id.toString() !== req.user?._id.toString()){
       throw new ApiError(401, "Unauthorized")
    }
    
@@ -493,6 +524,8 @@ const handleSolcialLogin = asyncHandler(async(req,res)=>{
 
 
 
+
+
 export {
    signUp,
    verifyEmail,
@@ -505,5 +538,6 @@ export {
    assignRole,
    getCurrentUser,
    getAllUsers,
+   changePassword,
    handleSolcialLogin
 }

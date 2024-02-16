@@ -10,7 +10,8 @@ import {
     assignRole,
     getAllUsers,
     getCurrentUser,
-    handleSolcialLogin
+    handleSolcialLogin,
+    changePassword
    } from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import {jwtVerify,verifyPermission} from "../middleware/auth.middleware.js"
@@ -41,10 +42,11 @@ router.route("/getAllUsers").get(jwtVerify,getAllUsers)
 router.route("/getCurrentUser").get(jwtVerify,getCurrentUser)
 router.route("/assignRole/c/:userId").post(jwtVerify, verifyPermission([UserRolesEnum.ADMIN]), assignRole)
 router.route("/resend-verification-email").post(jwtVerify,resendVerificationEmail)
-
+router.route("/changePassword").patch(jwtVerify,changePassword)
 
 
 // SSO routes
+
 router.route("/google").get(
    passport.authenticate("google", {
      scope: ["profile", "email"],
@@ -54,12 +56,12 @@ router.route("/google").get(
    }
  );
 
- router
-  .route("/auth/google/callback")
-  .get(passport.authenticate("google",{
-      failureRedirect: "http://localhost:5173/login",
-      successRedirect: "http://localhost:5173/home",
-    }));
+//  router
+//   .route("/auth/google/callback")
+//   .get(passport.authenticate("google",{
+//       failureRedirect: "http://localhost:5173/login",
+//       successRedirect: "http://localhost:5173/home",
+//     }));
     
 
 export default router;
