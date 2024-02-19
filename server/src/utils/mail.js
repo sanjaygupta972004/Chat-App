@@ -55,7 +55,7 @@ const emailVerificationMailgenContent = (username, verificationUrl) => {
          },
        },
        outro:
-         "Need help, or have questions? Just reply to this email, we'd love to help.",
+         `Need help, or have questions? Just reply to this email. ${process.env.MAILTRAP_SMPT_USER}, we'd love to help.`,
      },
    };
  };

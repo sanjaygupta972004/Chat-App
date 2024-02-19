@@ -22,10 +22,7 @@ const router = Router();
 
 // unsecured route
 router.route("/signup").post(
-   upload.fields([
-      {name:"profileImage",maxCount:1},
-      {name:"coverImage",maxCount:1}
-   ]),
+   upload.single("profileImage"),
    signUp
    )
 router.route("/verify-email/:varificationToken").get(verifyEmail)

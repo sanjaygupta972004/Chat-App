@@ -45,6 +45,7 @@ const userSchema = new Schema(
       },
       coverImage: {
          type: String,
+         default: "https://e0.pxfuel.com/wallpapers/137/952/desktop-wallpaper-facebook-cover-love-lovely-nice-cool-touch-beauty.jpg ",
       },
       role: {
          type: String,

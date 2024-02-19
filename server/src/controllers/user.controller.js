@@ -55,7 +55,7 @@ const signUp = asyncHandler(async(req,res)=>{
       throw new ApiError(400,"User already exists")
    }
 
-   const localPathProfileImage = req.files?.profileImage[0]?.path;
+   const localPathProfileImage = req.file ?.path;
 
   // console.log(localPathProfileImage)
 
@@ -63,15 +63,16 @@ const signUp = asyncHandler(async(req,res)=>{
       throw new ApiError(400,"Profile Image is required")
    }
 
-   let localPathCoverImage 
-   if(req.files?.coverImage){
-      localPathCoverImage = req.files?.coverImage[0]?.path;
-   }
+   // let localPathCoverImage 
+   // if(req.files?.coverImage){
+   //    localPathCoverImage = req.files?.coverImage[0]?.path;
+   // }
  
 
    const profileImage = await upLoadOnCloudinary(localPathProfileImage);
-   const coverImage = await upLoadOnCloudinary(localPathCoverImage);
-
+   // const coverImage = await upLoadOnCloudinary(localPathCoverImage);
+   
+  // console.log(profileImage)
 
    if(!profileImage){
       throw new ApiError(500,"Error uploading profile image")
@@ -84,7 +85,6 @@ const signUp = asyncHandler(async(req,res)=>{
       isEmailVerified:false,
       role:role|| UserRolesEnum.USER,
       profileImage:profileImage.url,
-      coverImage:coverImage.url
    })
 
    const {unHashedToken,hashedToken,expiryTime} = await user.emailGenerateTemporaryToken();
@@ -103,7 +103,7 @@ const signUp = asyncHandler(async(req,res)=>{
          `${req.protocol}://${req.get(
             "host"
           )}/api/v1/users/verify-email/${unHashedToken}`
-         // `http://localhost:3000/api/v1/auth/verify-email/${unHashedToken}`
+        //  `${process.env.CORS_ORIGIN}/api/v1/auth/verify-email/${unHashedToken}`
          
       )
    })

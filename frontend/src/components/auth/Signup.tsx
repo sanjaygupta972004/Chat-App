@@ -25,7 +25,7 @@ const Signup = () => {
    const navigate = useNavigate();
 
    const [profileImage, setProfileImage] = useState<File| null>(null);
-   const [coverImage,setCoverImage] = useState<File | null>(null);
+
 
 
    const { register, handleSubmit,setError, formState: { errors,isSubmitting } } = useForm<FormFilld>({
@@ -48,13 +48,6 @@ const Signup = () => {
     };
    }
 
-
-   const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files[0]) {
-           setCoverImage(e.target.files[0]);
-      }
-   }
-  
    const handleKeyDown = (event: React.KeyboardEvent) => {
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault(); 
@@ -89,9 +82,7 @@ const Signup = () => {
       if (profileImage) {
          formData.append('profileImage', profileImage);
       }
-      if (coverImage) {
-         formData.append('coverImage', coverImage);
-      }
+    
      // console.log(formData );
     try {
      
@@ -201,7 +192,7 @@ const Signup = () => {
                    </div>
                       
                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="profileImage">
+                        <label className="block text-gray-700 text-sm font-bold mb-2 font-serif" htmlFor="profileImage">
                         Profile-Image...
                         </label>
                        <Input 
@@ -211,19 +202,7 @@ const Signup = () => {
                         onKeyDown={handleKeyDown} />
                         {/* {errors.avatar?.file && <p className="text-red-500 text-xs italic">{errors.avatar.file.message}</p>} */}
                   </div>
-                  <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="coverImage">
-                        Cover-Image...
-                        </label>
-                       <Input 
-                         id="coverImage"
-                         type="file" 
-                         onChange={handleCoverImageChange}
-                         onKeyDown={handleKeyDown} 
-                        
-                        />
-                        {/* {errors.avatar?.file && <p className="text-red-500 text-xs italic">{errors.avatar.file.message}</p>} */}
-                   </div>
+             
                   
                    <div className="flex items-center justify-between">
                       <Button
