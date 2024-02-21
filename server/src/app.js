@@ -46,9 +46,11 @@ app.use(express.static("public"))
 
 import userRouter from "./routers/user.router.js"
 import chatRouter from "./routers/chat.router.js"
+import messageRouter from "./routers/message.router.js"
 
 app.use("/api/v1/users",userRouter)
 app.use("/api/v1/chats",chatRouter)
+app.use("/api/v1/messages",messageRouter)
 
 
 export {app}

@@ -5,63 +5,67 @@ import {Chat} from "../models/chat.model.js"
 import { User } from "../models/user.model.js";
 
 
+const accessChat = asyncHandler(async (req, res) => {
+   const { userId } = req.body;
 
-const accessChat = asyncHandler(async (req,res)=>{
-   const {userId} = req.body
-   let  isChat = await Chat.find({
-      isGroupChat : false,
-      $and :[
-         {
-            users:{
-               $elemMatch:{
-                  $eq:userId
+   const isChat = await Chat.aggregate([
+       {
+           $match: {
+               isGroupChat: false,
+               users: {
+                   $all: [userId, req.user._id]
                }
-            },
-            users:{
-               $elemMatch:{
-                  $eq:req.user._id
-               }
-            }
+           }
+       },
+       {
+           $lookup: {
+               from: "users",
+               localField: "users",
+               foreignField: "_id",
+               as: "usersData"
+           }
+       },
+       {
+           $lookup: {
+               from: "messages",
+               localField: "latestMessage",
+               foreignField: "_id",
+               as: "latestMessageData"
+           }
+       },
+       {
+           $addFields: {
+               users: "$usersData",
+               latestMessage: { $arrayElemAt: ["$latestMessageData", 0] }
+           }
+       },
+       {
+           $project: {
+               usersData: 0,
+               latestMessageData: 0
+           }
+       }
+   ]);
 
-         }
-      ]
-   }).populate("users","-password").populate("latestMessage")
+   if (isChat.length > 0) {
+       return res.status(200).json(new ApiResponse(200, isChat[0], "Chat found"));
+   } else {
+       const chatData = {
+           chatName: "sender",
+           isGroupChat: false,
+           users: [req.user._id, userId]
+       };
 
-   isChat = await User.populate(isChat, {
-      path:"latestMessage.sender",
-      select:"fullName profileImage email "
-   })
-
-   //console.log(isChat[0])
-
-   if(isChat.length > 0){
-      return res
-      .status(200)
-      .json(new ApiResponse(200,isChat[0],"Chat found"))
-   } else { 
-      const chatData = {
-         chatName: "sender",
-         isGroupChat: false,
-         users: [req.user._id,userId],
-      }
-
-     // console.log(chatData)
-
-      try {
-         const createdChat = await Chat.create(chatData)
-           
-        // console.log(createdChat)
-
-            const fullChat = await Chat.findById({ _id: createdChat._id}).populate("users","-password")
-            return res
-            .status(201)
-            .json(new ApiResponse(201,fullChat,"Chat created"))
-         
-      } catch (error) {
-         throw new ApiError(500,"Something went wrong while creating chat")
-      }
+       try {
+           const createdChat = await Chat.create(chatData);
+           const fullChat = await Chat.findById(createdChat._id).populate("users", "-password");
+           return res.status(201).json(new ApiResponse(201, fullChat, "Chat created"));
+       } catch (error) {
+           throw new ApiError(500, "Something went wrong while creating chat");
+       }
    }
-   })
+});
+
 
 
 const fetchChat = asyncHandler(async (req,res)=>{

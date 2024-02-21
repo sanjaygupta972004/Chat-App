@@ -10,7 +10,7 @@ const chatSchema = new Schema(
          type: Boolean,
           default: false
       },
-      participants: [{ 
+      users: [{ 
             type: Schema.Types.ObjectId,
              ref: "User"
             }
