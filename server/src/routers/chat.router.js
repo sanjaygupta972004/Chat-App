@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import {
-      accessChat,
+     createOrGetOneOneChat,
       fetchChat, 
       createGroupChat,
       reNameGroupChat,
@@ -13,7 +13,9 @@ import {jwtVerify} from "../middleware/auth.middleware.js"
 
 const router = Router();
 
-router.route("/accessChat").post(jwtVerify,accessChat)
+router.use(jwtVerify)
+
+router.route("/createOrGetOneOneChat/c/:receiverId").get(createOrGetOneOneChat)
 router.route("/fetchChat").get(jwtVerify,fetchChat)
 router.route("/createGroupChat").post(jwtVerify,createGroupChat)
 router.route("/addMemberToGroupChat").post(jwtVerify,addMemberToGroupChat)

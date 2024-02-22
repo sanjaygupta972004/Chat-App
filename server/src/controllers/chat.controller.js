@@ -3,67 +3,147 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {Chat} from "../models/chat.model.js"
 import { User } from "../models/user.model.js";
+import { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
+
+const commonAggregationPipeline = () => {
+   return [
+      {
+         $lookup: {
+            from: "users",
+            localField: "users",
+            foreignField: "_id",
+            as: "users",
+            pipeline: [
+               {
+                  $project: {
+                     forgotPasswordToken: 0,
+                     forgotPasswordTokenExpiry: 0,
+                     emailVerificationToken: 0,
+                     emailVerificationTokenExpiry: 0,
+                     isEmailVerified: 0,
+                     password: 0,
+                     coverImage: 0,
+                  }
+               }
+            ]
+         }
+      },
+      {
+         $lookup: {
+            from: "messages",
+            localField: "latestMessage",
+            foreignField: "_id",
+            as: "latestMessage",
+            pipeline: [
+               {
+                  $lookup: {
+                     from: "users",
+                     localField: "sender",
+                     foreignField: "_id",
+                     as: "sender",
+                     pipeline: [
+                        {
+                           $project: {
+                              fullName: 1,
+                              profileImage: 1,
+                              email: 1,
+                              username: 1
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  $addFields: {
+                     sender: { $first: "$sender"}
+                  }
+               }
+            ]
+         }
+      },
+      {
+         $addFields: {
+      
+            latestMessage: { $first: "$latestMessage" }
+         }
+      }
+   ];
+};
 
 
-const accessChat = asyncHandler(async (req, res) => {
-   const { userId } = req.body;
+
+const createOrGetOneOneChat = asyncHandler(async (req, res) => {
+   const { receiverId } = req.params;
+
+   if (!receiverId) {
+         throw new ApiError(400, "Please provide receiverId");
+   } 
+   const senderId = req.user?._id;
+
+   const verifyReceiverId =  new mongoose.Types.ObjectId(receiverId);
+
+   const isUser = await User.findById(verifyReceiverId);
+
+   if(!isUser){
+      throw new ApiError(404,"User not available to chat")
+   } 
+
+   if(!verifyReceiverId){
+      throw new ApiError(400,"senderId is not valid")
+   }
+
+
+   if(verifyReceiverId === senderId){
+      throw new ApiError(400,"You cannot chat with yourself")
+   }
+
+
 
    const isChat = await Chat.aggregate([
        {
            $match: {
                isGroupChat: false,
                users: {
-                   $all: [userId, req.user._id]
+                   $all: [verifyReceiverId, senderId]
                }
            }
        },
-       {
-           $lookup: {
-               from: "users",
-               localField: "users",
-               foreignField: "_id",
-               as: "usersData"
-           }
-       },
-       {
-           $lookup: {
-               from: "messages",
-               localField: "latestMessage",
-               foreignField: "_id",
-               as: "latestMessageData"
-           }
-       },
-       {
-           $addFields: {
-               users: "$usersData",
-               latestMessage: { $arrayElemAt: ["$latestMessageData", 0] }
-           }
-       },
-       {
-           $project: {
-               usersData: 0,
-               latestMessageData: 0
-           }
-       }
+         ...commonAggregationPipeline()
    ]);
 
-   if (isChat.length > 0) {
-       return res.status(200).json(new ApiResponse(200, isChat[0], "Chat found"));
-   } else {
-       const chatData = {
-           chatName: "sender",
-           isGroupChat: false,
-           users: [req.user._id, userId]
-       };
+  
 
-       try {
-           const createdChat = await Chat.create(chatData);
-           const fullChat = await Chat.findById(createdChat._id).populate("users", "-password");
-           return res.status(201).json(new ApiResponse(201, fullChat, "Chat created"));
-       } catch (error) {
-           throw new ApiError(500, "Something went wrong while creating chat");
-       }
+   if (isChat.length) {
+       return res
+       .status(200)
+       .json(new ApiResponse(200, isChat[0], "Chat found"));
+   } 
+
+   const chatData = {
+      chatName: "one to one chat",
+      isGroupChat: false,
+      users: [verifyReceiverId, senderId],
+      admin: senderId
    }
+
+   const newChat = await Chat.create(chatData);
+
+   console.log(newChat);
+
+   const chatDetails =  await Chat.aggregate([
+      {
+         $match: {
+            _id: newChat._id
+         },
+         ...commonAggregationPipeline()
+      }
+   ]);
+
+   return res
+      .status(201)
+      .json(new ApiResponse(201, chatDetails[0], "Chat created"));
+   
 });
 
 
@@ -219,7 +299,7 @@ const deleteGroupChat = asyncHandler(async (req, res) => {
 
 
 export {
-   accessChat,
+   createOrGetOneOneChat,
    fetchChat,
    createGroupChat,
    reNameGroupChat,

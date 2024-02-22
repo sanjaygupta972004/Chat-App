@@ -77,8 +77,6 @@ const getAllMessages = asyncHandler(async (req, res) => {
 })
 
 
-
-
 const createMessage = asyncHandler(async (req, res) => {
    const { chatId } = req.params
    const { content} = req.body
