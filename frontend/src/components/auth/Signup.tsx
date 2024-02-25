@@ -4,29 +4,27 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {z} from 'zod'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-
 import { useState } from 'react'
-import axios,{AxiosError} from 'axios'
-import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import { toast } from 'react-toastify'
+import { useAuthContext,ContextProps } from '../context/authContext'
+import {AxiosResponseInterface, UserResponseInterface } from '../interface/index'
+import { LocalStorage } from '../utils/Localstorage'
+
 
 const signSchema = z.object({
    fullName: z.string().min(5),
    username: z.string().min(5).trim(),
    email: z.string().email().includes('@'),
    password: z.string().min(8),
- 
 })
 
  type FormFilld = z.infer<typeof signSchema>
 
 const Signup = () => {
- 
-   const navigate = useNavigate();
-
+   const {setUser} = useAuthContext() as ContextProps;
+  // const [message, setMessage] = useState<string | null>(null);
    const [profileImage, setProfileImage] = useState<File| null>(null);
-
-
 
    const { register, handleSubmit,setError, formState: { errors,isSubmitting } } = useForm<FormFilld>({
       defaultValues: {
@@ -68,49 +66,46 @@ const Signup = () => {
         formElements[nextIndex].focus();
       }
     };
-   
- 
 
   
     
    const onSubmit: SubmitHandler<FormFilld> = async(data) => {
-    const formData = new FormData();
-      formData.append('fullName', data.fullName);
-      formData.append('username', data.username);
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-      if (profileImage) {
-         formData.append('profileImage', profileImage);
-      }
-    
-     // console.log(formData );
-    try {
-     
-      const response =  await axios.post('/api/v1/users/signup', formData);
-      console.log(response.data);
-       
+   const Data = new FormData();
+   Data.append('fullName', data.fullName);
+   Data.append('username', data.username);
+   Data.append('email', data.email);
+   Data.append('password', data.password);
+   if (profileImage) {
+      Data.append('profileImage', profileImage, profileImage.name);
+   } else {
+      Data.append('profileImage', '');
+   }
+
+   try {
+      const response = await axios.post<AxiosResponseInterface |any>('/api/v1/users/signup', Data);
+      const { data} = response;
+      console.log(data.data.user);   
+      const user = data.data.user as UserResponseInterface;
+      console.log(user);
+      setUser(user);
+      LocalStorage.set('user', user);
       toast.success('Account created successfully');
-       
-      navigate('/login');
-
-
-    } catch (error) {
-       
-      const err = error as AxiosError;
-      if (err.response) {
-         console.log(err.response.data);
-         setError('root', {
-            type: 'manual',
-            message: (err.response.data as {message ?: string })?.message|| "Error occurred while creating account" 
-         })
-      }else if (err.request) {
-         console.log(err.request);
-         setError('root', {
-            type: 'manual',
-            message: "Network Error"
-         })
-      }
-
+   } catch (error) {
+      if (axios.isAxiosError(error)) {
+         console.log(error.response?.status);
+         if(error.response && error.response?.headers['content-type'] === 'text/html; charset=utf-8'){
+             const errorHtml = error.response.data;
+             const errorBody = errorHtml.split('<body>')[1].split('</body>')[0];
+             const errorMatch = /<pre>Error: (.+?)<\/pre>/g.exec(errorHtml);
+             console.log(errorHtml, errorBody, errorMatch);
+          
+             const errorMessage = errorMatch ? errorMatch[0] : 'Error occurred while creating account';
+               setError('root', {
+                  type: 'manual',
+                  message: errorMessage
+               })
+            }
+        }
          else if(error instanceof Error){
             console.log(error.message);
             setError('root', {
@@ -132,7 +127,6 @@ const Signup = () => {
          }
    };
 }
-
    return (
    
       <div className="container mx-auto">

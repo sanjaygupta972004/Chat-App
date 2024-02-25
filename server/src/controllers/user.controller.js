@@ -145,9 +145,10 @@ const verifyEmail = asyncHandler(async(req,res)=>{
 
    user.save({validateBeforeSave:false})
 
-   return res
-   .status(200)
-   .json(new ApiResponse(200,{},"Email verified successfully"))
+  console.log(process.env.CORS_ORIGIN)
+
+   return res.redirect(`${process.env.CORS_ORIGIN}/login`) 
+   
 
 })
 

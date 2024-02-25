@@ -24,7 +24,7 @@ const sendEmail = async (options) => {
    })
 
    const mail = {
-      from :"Chat-App <" ,
+      from :`Chat-App <<${process.env.MAILTRAP_SMPT_USER}>>` ,
       to: options.email,
       subject: options.subject,
       text: mailTextual,
