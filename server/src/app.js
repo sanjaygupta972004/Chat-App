@@ -7,6 +7,8 @@ import pasport from "passport"
 import "./passport.js"
 import session from "express-session"
 
+import errorHandler from "./middleware/errorHandler.js"
+
 
 const app = express()
 
@@ -52,5 +54,8 @@ app.use("/api/v1/users",userRouter)
 app.use("/api/v1/chats",chatRouter)
 app.use("/api/v1/messages",messageRouter)
 
+
+
+app.use(errorHandler)
 
 export {app}
