@@ -31,10 +31,6 @@ app.use(pasport.session()); // persistent login sessions
 
 
 
-
-
-
-
 app.use(bodyParser.urlencoded({
       limit: "15mb",
       extended: true

@@ -10,6 +10,7 @@ import { toast } from 'react-toastify'
 import { useAuthContext,ContextProps } from '../context/authContext'
 import {AxiosResponseInterface, UserResponseInterface } from '../interface/index'
 import { LocalStorage } from '../utils/Localstorage'
+import { useNavigate} from 'react-router-dom'
 
 
 const signSchema = z.object({
@@ -23,8 +24,9 @@ const signSchema = z.object({
 
 const Signup = () => {
    const {setUser} = useAuthContext() as ContextProps;
-  // const [message, setMessage] = useState<string | null>(null);
+   const navigate = useNavigate();
    const [profileImage, setProfileImage] = useState<File| null>(null);
+   const [datam, setDatam] = useState<FormFilld | null>(null);
 
    const { register, handleSubmit,setError, formState: { errors,isSubmitting } } = useForm<FormFilld>({
       defaultValues: {
@@ -80,34 +82,25 @@ const Signup = () => {
    } else {
       Data.append('profileImage', '');
    }
+   setDatam(data);
 
    try {
       const response = await axios.post<AxiosResponseInterface |any>('/api/v1/users/signup', Data);
       const { data} = response;
-      console.log(data.data.user);   
       const user = data.data.user as UserResponseInterface;
-      console.log(user);
       setUser(user);
       LocalStorage.set('user', user);
       toast.success('Account created successfully');
+      
+      navigate("/emailVarification");
    } catch (error) {
       if (axios.isAxiosError(error)) {
-         console.log(error.response?.status);
-         if(error.response && error.response?.headers['content-type'] === 'text/html; charset=utf-8'){
-             const errorHtml = error.response.data;
-             const errorBody = errorHtml.split('<body>')[1].split('</body>')[0];
-             const errorMatch = /<pre>Error: (.+?)<\/pre>/g.exec(errorHtml);
-             console.log(errorHtml, errorBody, errorMatch);
-          
-             const errorMessage = errorMatch ? errorMatch[0] : 'Error occurred while creating account';
-               setError('root', {
-                  type: 'manual',
-                  message: errorMessage
-               })
-            }
-        }
-         else if(error instanceof Error){
-            console.log(error.message);
+         console.log(error.response?.data.statusCode);
+         setError('root', {
+            type: 'manual',
+            message: error.response?.data.message as string
+         })
+         } else if(error instanceof Error){
             setError('root', {
                type: 'manual',
                message: error.message as string // Cast error.message to string
@@ -200,7 +193,7 @@ const Signup = () => {
                   
                    <div className="flex items-center justify-between">
                       <Button
-                        className='hover:bg-blue-700 hover:text-white text-gray-800 border-blue-700'
+                        className='hover:bg-blue-700 hover:text-gray-600 text-gray-900 border-blue-700'
                         variant= "outline"
                         type="submit"
                         onKeyDown ={(event: React.KeyboardEvent) => handleKeyDown(event)}
@@ -209,7 +202,7 @@ const Signup = () => {
                       </Button>
                   </div>
                   <div>
-                     {errors.root && <p className="text-red-600 text-[15px] font-mono">{errors.root.message}</p>}
+                     {errors.root && <p className="text-red-600 text-[18px] pt-1 font-mono">{errors.root.message}</p>}
                   </div>
                 
                </form>

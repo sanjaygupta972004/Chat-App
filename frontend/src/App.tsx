@@ -4,6 +4,8 @@ import  Home  from "./pages/Home"
 import Login from "./components/auth/Login"
 import Signup from "./components/auth/Signup"
 import EmailVerification from "./pages/EmailVerification"
+import  ResendEmailVarification from "./pages/ResendEmailVarification"
+import NotFound from "./pages/ErrorNotFound"
 
 
 function App() {
@@ -17,10 +19,9 @@ function App() {
           <Route path="login" element={<Login/>} />
 
         </Route>
-        <Route path ="/api/v1/auth/verify-email/:varificationToken" element = {<EmailVerification/>}>
-
-        </Route>
-
+        <Route path ="/emailVarification" element = {<EmailVerification/>}></Route>
+        <Route path ="/resend-emailVarification" element = {<ResendEmailVarification/>}></Route>
+        <Route path = "*" element = {<NotFound/>}></Route>
       </Routes>
     </>
   )
