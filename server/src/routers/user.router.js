@@ -26,9 +26,11 @@ router.route("/signup").post(
    signUp
    )
 router.route("/verify-email/:varificationToken").get(verifyEmail)
+router.route("/resend-verification-email").post(resendVerificationEmail)
 router.route("/login").post(logIn)
 router.route("/forgot-password").post(forgotPasswordRequest)
 router.route("/reset-forgot-password/:resetToken").post(resetForgotPassword)
+
 
 
 
@@ -38,7 +40,6 @@ router.route("/logout").get(jwtVerify,logOut)
 router.route("/getAllUsers").get(jwtVerify,getAllUsers)
 router.route("/getCurrentUser").get(jwtVerify,getCurrentUser)
 router.route("/assignRole/c/:userId").post(jwtVerify, verifyPermission([UserRolesEnum.ADMIN]), assignRole)
-router.route("/resend-verification-email").post(jwtVerify,resendVerificationEmail)
 router.route("/changePassword").patch(jwtVerify,changePassword)
 
 

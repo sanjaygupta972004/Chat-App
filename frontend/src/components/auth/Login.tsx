@@ -72,7 +72,7 @@ const Login = () => {
       toast.success('Login Successful');
       data.email = '';
       data.password = '';
-      navigate('/chat');
+      navigate('/chats');
 
     } catch (error) {
       if (axios.isAxiosError<AxiosErrorInterface>(error)) {
