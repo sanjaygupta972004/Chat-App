@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { UserResponseInterface } from "../interface/index";
-import { LocalStorage } from "../utils/Localstorage";
+
 
 type ChildrenProps = {
    children: React.ReactNode
@@ -23,6 +23,7 @@ const AuthProvider = ({children}:ChildrenProps) => {
    const [token, setToken] = useState<string | null>(null);
 
    console.log(user)
+   console.log("token",token)
 
    const Logout = () => {
       console.log("Logout");

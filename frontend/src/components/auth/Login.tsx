@@ -4,10 +4,13 @@ import { z } from 'zod'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Link } from 'react-router-dom'
-import axios, {AxiosError} from 'axios'
+import axios from 'axios'
 import {toast} from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { LocalStorage } from '../../utils/Localstorage'
+import {AxiosErrorInterface,AxiosResponseInterface} from '../interface'
+import { useAuthContext,ContextProps } from '../context/authContext'
 
 const signSchema = z.object({
   email: z.string().email(),
@@ -18,6 +21,7 @@ type FormFilld = z.infer<typeof signSchema>
 
 const Login = () => {
   const navigate = useNavigate();
+  const { setToken } = useAuthContext() as ContextProps;
   const [showPassword, setShowPassword] = useState<Boolean>(false);
 
   const handleShowPassword = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -57,25 +61,25 @@ const Login = () => {
   const onSubmit: SubmitHandler<FormFilld> = async (data) => {
  
     try {
-      const response =  await axios.post('/api/v1/users/login', data, {
+      const response =  await axios.post<AxiosResponseInterface>('/api/v1/users/login', data, {
        withCredentials: true
       }
       );
-      const {accessToken,refreshToken} = response.data;
-      localStorage.setItem('accessToken',accessToken);
-      localStorage.setItem('refreshToken',refreshToken);
+      const {accessToken,refreshToken} = response.data as unknown as {accessToken: string, refreshToken: string};
+      LocalStorage.set('accessToken', accessToken);
+      LocalStorage.set('refreshToken', refreshToken);
+      setToken(accessToken);
       toast.success('Login Successful');
       data.email = '';
       data.password = '';
       navigate('/chat');
 
     } catch (error) {
-      const err = error as AxiosError;
-      if (err.response) {
-        console.log(err.response.data);
+      if (axios.isAxiosError<AxiosErrorInterface>(error)) {
+        console.log(error.response?.data.statusCode);
         setError('root', {
           type: 'manual',
-          message: (err.response.data as {message ?: string })?.message|| "Error occurred while login" 
+          message: (error.response?.data as {message ?: string })?.message|| "Error occurred while login" 
         })
       }else{
         setError('root', {
@@ -96,7 +100,7 @@ const Login = () => {
         
             <Input {...register("email")} id="email" type= "text" placeholder="Email" onKeyDown={handleKeyDown} />
            
-            {errors.email && <p className="text-red-500 text-xs italic">{errors.email.message}</p>}
+            {errors.email && <p className="text-red-500 text-[17px] font-mono pt-[2px]">{errors.email.message}</p>}
             
           </div>
           <div className="mb-6">
@@ -108,7 +112,7 @@ const Login = () => {
              {showPassword ? "Hide" : "Show" }
             </Button>
             </div>
-            {errors.password && <p className="text-red-500 text-xs italic">{errors.password.message}</p>}
+            {errors.password && <p className="text-red-500 text-[17px]  font-serif pt-[2px]">{errors.password.message}</p>}
           </div>
           <div className="flex items-center justify-between">
             <Button className='hover:bg-blue-700 hover:text-white text-gray-700 border-blue-700 font-thin text-xl' variant="outline" type="submit" disabled={isSubmitting}>
@@ -116,11 +120,16 @@ const Login = () => {
             </Button>
           </div>
           <div className='mt-4'>
-            {errors.root && <p className="text-red-500 text-[12px] font-thin">{errors.root.message}</p>}
-            <p className="text-gray-900 text-[20px] font-mono">Don't have an account ? 
+            {errors.root && <div className='flex  gap-2'>
+              <p className="text-red-500 text-[20px] font-mono underline ">{errors.root.message}</p> 
+               {errors.root.message == "Please verify your email" && <Button variant={"default"} >
+                <Link to = "/emailVarification" className='font-mono text-xl text-pink-600 hover:text-orange-400 hover: '>EmailVer..</Link>
+               </Button>}
+              </div>}
+            <p className="text-[20px] font-serif leading-4 from-neutral-600">Don't have an account Plz ? 
              <Button 
               variant={"link"}>
-               <Link to = "/signup" className='font-mono text-xl hover:text-orange-400 underline'>Signup</Link>
+               <Link to = "/signup" className='font-mono text-xl text-pink-600 hover:text-orange-400 underline'>Signup</Link>
              </Button>
             </p>
           </div>

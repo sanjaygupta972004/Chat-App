@@ -25,6 +25,8 @@ export interface AxiosResponseInterface extends AxiosResponse {
 }
 
 export interface AxiosErrorInterface{
- message : string;
- status : number
+message : string;
+statusCode : number;
+success: boolean;
+data : any;
 }

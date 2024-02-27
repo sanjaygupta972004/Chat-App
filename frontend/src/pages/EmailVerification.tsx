@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
-import { LocalStorage } from "@/components/utils/Localstorage";
+import { LocalStorage } from "@/utils/Localstorage";
 import { images } from "../assets/images";
 
 

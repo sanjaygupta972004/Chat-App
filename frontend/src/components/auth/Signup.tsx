@@ -1,5 +1,5 @@
 
-import { useForm,SubmitHandler} from 'react-hook-form'
+import { useForm,SubmitHandler,} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'        
 import {z} from 'zod'
 import { Button } from '../ui/button'
@@ -9,15 +9,16 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useAuthContext,ContextProps } from '../context/authContext'
 import {AxiosResponseInterface, UserResponseInterface } from '../interface/index'
-import { LocalStorage } from '../utils/Localstorage'
+import { LocalStorage } from '../../utils/Localstorage'
 import { useNavigate} from 'react-router-dom'
 
 
+
 const signSchema = z.object({
-   fullName: z.string().min(5),
+   fullName: z.string().min(5 , "Full Name must be at least 5 characters"),
    username: z.string().min(5).trim(),
    email: z.string().email().includes('@'),
-   password: z.string().min(8),
+   password: z.string().min(8, "Password must be at least 8 characters"),
 })
 
  type FormFilld = z.infer<typeof signSchema>
@@ -26,7 +27,8 @@ const Signup = () => {
    const {setUser} = useAuthContext() as ContextProps;
    const navigate = useNavigate();
    const [profileImage, setProfileImage] = useState<File| null>(null);
-   const [datam, setDatam] = useState<FormFilld | null>(null);
+   const [profileImgError, setProfileImgError] = useState<string |null>(null);
+   const[showPassword, setShowPassword] = useState<boolean>(false);
 
    const { register, handleSubmit,setError, formState: { errors,isSubmitting } } = useForm<FormFilld>({
       defaultValues: {
@@ -34,7 +36,6 @@ const Signup = () => {
          username: '',
          email: '',
          password: '',
-   
       },
       resolver:zodResolver(signSchema)
    });
@@ -44,9 +45,17 @@ const Signup = () => {
       if (e.target.files && e.target.files[0]) {
         const file = e.target.files[0];
         setProfileImage(file);
-      
+    }else {
+      setProfileImgError('Please select an image');   
+      }
     };
-   }
+
+   const handleShowPassword = (e: React.MouseEvent<HTMLButtonElement>) => {
+         e.preventDefault();
+         setShowPassword((prev) => !prev);
+    };
+
+
 
    const handleKeyDown = (event: React.KeyboardEvent) => {
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
@@ -69,8 +78,6 @@ const Signup = () => {
       }
     };
 
-  
-    
    const onSubmit: SubmitHandler<FormFilld> = async(data) => {
    const Data = new FormData();
    Data.append('fullName', data.fullName);
@@ -82,8 +89,7 @@ const Signup = () => {
    } else {
       Data.append('profileImage', '');
    }
-   setDatam(data);
-
+ 
    try {
       const response = await axios.post<AxiosResponseInterface |any>('/api/v1/users/signup', Data);
       const { data} = response;
@@ -91,8 +97,8 @@ const Signup = () => {
       setUser(user);
       LocalStorage.set('user', user);
       toast.success('Account created successfully');
-      
-      navigate("/emailVarification");
+      setProfileImage(null);
+      navigate("/emailVerification");
    } catch (error) {
       if (axios.isAxiosError(error)) {
          console.log(error.response?.data.statusCode);
@@ -153,7 +159,7 @@ const Signup = () => {
                        placeholder="Username" 
                        onKeyDown={handleKeyDown}
                        />
-                     {errors.username && <p className="text-red-500 text-xs italic"> {errors.username.message} </p>}
+                     {errors.username && <p className="text-red-500 text-xs font-mono"> {errors.username.message} </p>}
                   </div>
                   <div className="mb-4">
                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
@@ -164,18 +170,23 @@ const Signup = () => {
                       type="text" 
                       placeholder="Email"
                       onKeyDown={handleKeyDown} />
-                     {errors.email && <p className="text-red-500 text-xs italic"> {errors.email.message} </p>}
+                     {errors.email && <p className="text-red-500 text-xs font-mono"> {errors.email.message} </p>}
                   </div>
                   <div className="mb-6">
                      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
                         Password
                      </label>
+                     <div className='flex justify-between  gap-2'>
                      <Input {...register("password")}
                       id="password" 
-                      type="password"
+                      type= {showPassword?"text":"Password"}
                       placeholder="*************" 
                       onKeyDown={handleKeyDown}/>
-                     {errors.password && <p className="text-red-700 text-xs italic"> {errors.password.message} </p>}
+                      <Button variant={"outline"} onClick={handleShowPassword} type='submit'  className='text-xl font-mono text-gray-500 hover:text-gray-700'>
+                           {showPassword ? "Hide" : "Show" }
+                      </Button>
+                     </div>
+                     {errors.password && <p className="text-red-700 text-xs font-mono"> {errors.password.message} </p>}
                    </div>
                       
                    <div className="mb-4">
@@ -187,7 +198,7 @@ const Signup = () => {
                         type="file" 
                         onChange={handleProfileImageChange}
                         onKeyDown={handleKeyDown} />
-                        {/* {errors.avatar?.file && <p className="text-red-500 text-xs italic">{errors.avatar.file.message}</p>} */}
+                        {profileImgError && <p className="text-red-500 text-xs italic">{profileImgError}</p>} 
                   </div>
              
                   
