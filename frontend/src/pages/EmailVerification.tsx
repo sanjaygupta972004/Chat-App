@@ -35,7 +35,7 @@ const EmailVerification = () => {
             If you haven't received the email, please check your spam folder or 
             click the button below to resend the email.
           </p>
-          <Link to = "/resend-emailVarification">
+          <Link to = "/resend-emailVerification">
           <Button
            variant={"default"}
            className="w-auto h-[50px] text-lg font-serif hover:bg-[#f0f0f0] hover:text-[#070806] transition-all duration-300 ease-in-out"
