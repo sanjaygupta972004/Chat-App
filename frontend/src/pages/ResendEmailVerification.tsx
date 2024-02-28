@@ -6,7 +6,6 @@ import axios from "axios";
 import { isAxiosError } from "axios";
 import {toast} from 'react-toastify';
 import {useNavigate} from 'react-router-dom';
-
 type Error = {
   email: string;
   server: string;
@@ -15,12 +14,15 @@ type Error = {
 
 export const ResendEmailVerification = () => {
   const [email, setEmail] = useState<string>("");
-  const user = LocalStorage.get("user");
   const[restoreEmail, setRestoreEmail] = useState<string>("");
   const [error ,setError] = useState<Error>({
     email: "",
     server: "",
   });
+ const [loading, setLoading] = useState<boolean>(false);
+
+
+  const user = LocalStorage.get("user");
   
    const navigate = useNavigate();
 
@@ -41,15 +43,19 @@ export const ResendEmailVerification = () => {
 
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
     if(email === "") {
       setError({email: "Email is required", server: ""});
+      setLoading(false);
       return;
     } else if(email !== restoreEmail) {
       setError({email: "Pls Enter Same Email", server: ""});
+      setLoading(false);
       return;
     }
 
     try {
+      
       const response = await axios.post("/api/v1/users/resend-verification-email", {email});
       console.log(response);
        if(response.data.statusCode === 200) {
@@ -60,9 +66,13 @@ export const ResendEmailVerification = () => {
     } catch (error) {
       if(isAxiosError(error)) {
         setError({email: "", server: error.response?.data.message});
+     
       }else {
         setError({email: "", server: "Something went wrong"});
+      
       }
+    }finally {
+      setLoading(false);
     }
  
 
@@ -85,11 +95,11 @@ export const ResendEmailVerification = () => {
               />
              {error?.email &&  <p className="text-red-500 leading-tight font-mono text-xl pt-1">{error.email}</p>}
             </div>
-            <Button
+            <Button 
               variant={"default"}
               type="submit"
               className="w-full h-[50px] text-2xl font-serif hover:bg-[#f0f0f0] hover:text-[#070806] transition-all duration-300 ease-in-out" >
-              Resend Email
+              {loading ? "Submiting..." : "Submit"}
             </Button>
             {error?.server && <p className="text-red-500 leading-tight font-mono text-xl pt-1">{error.server}</p>}
           </form>

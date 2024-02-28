@@ -11,8 +11,7 @@ export interface UserResponseInterface {
  email: string;
  createdAt: string;
  updatedAt: string;
- LoginType : string;
- isEmailVarified : boolean;
+ isEmailVerified : boolean;
  role: string;
 }
 

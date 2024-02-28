@@ -20,15 +20,14 @@ function App() {
         <Route path="/" element={<Home/>}>
           <Route path="signup" element={<Signup/>} />
           <Route path="login" element={
-            <PublicRoute>
+       
                 <Login/>
-            </PublicRoute>}/>
+              }/>
         </Route>
         <Route path ="/emailVerification" element = {
           <PublicRoute>
             <EmailVerification/>
          </PublicRoute>}>
-
         </Route>
         <Route path ="/resend-emailVerification" element = {
           <PublicRoute>
@@ -44,10 +43,6 @@ function App() {
         }> 
             
         </Route>
-
-
-
-
         <Route path = "*" element = {<NotFound/>}></Route>
       </Routes>
     </>

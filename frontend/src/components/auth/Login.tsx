@@ -1,4 +1,4 @@
-import { useForm, SubmitHandler } from 'react-hook-form'
+import { useForm, SubmitHandler} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '../ui/button'
@@ -10,7 +10,8 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { LocalStorage } from '../../utils/Localstorage'
 import {AxiosErrorInterface,AxiosResponseInterface} from '../interface'
-import { useAuthContext,ContextProps } from '../context/authContext'
+import { useAuthContext,ContextProps,LoggedUserInterface } from '../context/authContext'
+
 
 const signSchema = z.object({
   email: z.string().email(),
@@ -21,7 +22,7 @@ type FormFilld = z.infer<typeof signSchema>
 
 const Login = () => {
   const navigate = useNavigate();
-  const { setToken } = useAuthContext() as ContextProps;
+  const { setToken, setLoggedUser } = useAuthContext() as ContextProps;
   const [showPassword, setShowPassword] = useState<Boolean>(false);
 
   const handleShowPassword = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -65,11 +66,15 @@ const Login = () => {
        withCredentials: true
       }
       );
-      const {accessToken,refreshToken} = response.data as unknown as {accessToken: string, refreshToken: string};
-      LocalStorage.set('accessToken', accessToken);
-      LocalStorage.set('refreshToken', refreshToken);
+      
+      const {accessToken,isLoggedUser} = response.data.data as LoggedUserInterface;
       setToken(accessToken);
-      toast.success('Login Successful');
+      setLoggedUser(isLoggedUser as any); 
+      LocalStorage.set('accessToken', accessToken);
+      LocalStorage.set('isLoggedUser', isLoggedUser);
+      if(response.data.statusCode === 200){
+        toast.success("Login Successfully");
+      }
       data.email = '';
       data.password = '';
       navigate('/chats');
@@ -115,8 +120,11 @@ const Login = () => {
             {errors.password && <p className="text-red-500 text-[17px]  font-serif pt-[2px]">{errors.password.message}</p>}
           </div>
           <div className="flex items-center justify-between">
-            <Button className='hover:bg-blue-700 hover:text-white text-gray-700 border-blue-700 font-thin text-xl' variant="outline" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Login'}
+            <Button className='hover:bg-blue-700 hover:text-white text-gray-700 border-blue-700 font-thin text-xl'
+             variant="outline"
+             type="submit" 
+             disabled={isSubmitting}>
+             {isSubmitting ? 'Submitting...' : 'Login'}
             </Button>
           </div>
           <div className='mt-4'>
