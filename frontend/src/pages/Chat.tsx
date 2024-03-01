@@ -1,7 +1,10 @@
+import Home from "../components/chat/Home"
 
 const Chat = () => {
   return (
-    <div>Chat</div>
+     <div>
+      <Home/>
+     </div>
   )
 }
 
